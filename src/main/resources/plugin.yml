@@ -1,0 +1,9 @@
+name: Archivist
+main: org.crayne.archivist.ArchivistPlugin
+version: 1.0
+api-version: 1.12
+description: Core plugin for anarchived
+
+commands:
+  goto:
+    description: Teleports a player to any save
