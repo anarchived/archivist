@@ -6,14 +6,6 @@ import java.nio.file.Path;
 
 public record Region(int regionX, int regionZ, @NotNull Dimension dimension, @NotNull Path source) {
 
-    public int endRegionX() {
-        return regionX + 512;
-    }
-
-    public int endRegionZ() {
-        return regionZ + 512;
-    }
-
     public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -32,13 +24,13 @@ public record Region(int regionX, int regionZ, @NotNull Dimension dimension, @No
         return result;
     }
 
+    @NotNull
     public String toString() {
         return "Region{" +
-                "startX=" + regionX +
-                ", startZ=" + regionZ +
-                ", endX=" + endRegionX() +
-                ", endZ=" + endRegionZ() +
+                "regionX=" + regionX +
+                ", regionZ=" + regionZ +
                 ", dimension=" + dimension +
                 '}';
     }
+
 }
