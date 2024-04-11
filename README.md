@@ -45,7 +45,21 @@ archive
    └─ ...
 ```
 #### See the public anarchived archive for a more in-depth example (coming soon).
+When the server starts, The Archivist plugin will use the given archive to create a server-index.json, for 
+associating servers with saves and variants with specific locations and world files on the server.
+During this stage, the save finder GUI will also be automatically generated.
 
+## Extending the archive / deleting saves
+To modify the server archive in any way, simply edit your archive folder with the given files.
+When you're finished, delete all of the folders containing "blob" in their names, as well as the 
+server-index.json in your server folder and restart. The Archivist pluginwill re-index your entire 
+archive and regenerate the Server Index. The next time your server starts, the cached index will be 
+used for a faster server load time.
+
+## Do NOT use the "/reload" command
+Since archives directly modify region files on the server, make sure to NEVER reload your server, as it can cause corruptions or other
+errors unexpectedly. Always fully restart your server, or be prepared for failures. If your server archive does become 
+corrupted, stop your server as soon as possible, then re-index the archive using the steps mentioned above.
 
 # How it works internally
 ## Blobs and Blob Fields
