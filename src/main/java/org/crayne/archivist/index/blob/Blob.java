@@ -63,4 +63,12 @@ public class Blob {
         return other.regions().stream().anyMatch(regions()::contains);
     }
 
+    @NotNull
+    public String toString() {
+        return "Blob{" +
+                "regions=" + regions +
+                ", dimension=" + dimension +
+                '}';
+    }
+
 }
