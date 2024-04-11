@@ -44,7 +44,7 @@ archive
       └─ ...
    └─ ...
 ```
-#### See the public anarchived archive for a more in-depth example (coming soon).
+#### See the [public anarchived archive](https://github.com/anarchived/public-archive) for a more in-depth example.
 When the server starts, The Archivist plugin will use the given archive to create a server-index.json, for 
 associating servers with saves and variants with specific locations and world files on the server.
 During this stage, the save finder GUI will also be automatically generated.
