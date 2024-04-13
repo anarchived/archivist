@@ -23,10 +23,12 @@ public record BlobLevel(int blobIndex, @NotNull Dimension dimension, @NotNull St
 
     @NotNull
     public static World createWorld(@NotNull final String worldName, @NotNull final World.Environment environment) {
-        return Bukkit.createWorld(new WorldCreator(worldName)
+        final World world = Bukkit.createWorld(new WorldCreator(worldName)
                 .generator(SpawnWorld.EMPTY_GENERATOR)
                 .environment(environment)
         );
+        world.setAutoSave(false);
+        return world;
     }
 
     @NotNull
