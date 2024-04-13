@@ -18,9 +18,6 @@ tasks {
         dependsOn(named("shadowJar"))
     }
     shadowJar {
-        relocate("io.papermc.lib", "com.dfsek.terra.lib.paperlib")
-        relocate("com.google.common", "com.dfsek.terra.lib.google.common")
-        relocate("org.apache.logging.slf4j", "com.dfsek.terra.lib.slf4j-over-log4j")
         exclude("org/slf4j/**")
         exclude("org/checkerframework/**")
         exclude("org/jetbrains/annotations/**")
@@ -46,10 +43,13 @@ repositories {
     maven("https://oss.sonatype.org/content/repositories/snapshots")
     maven("https://oss.sonatype.org/content/repositories/central")
     maven("https://repo.dmulloy2.net/repository/public/")
+    maven("https://jitpack.io")
 }
 
 dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
+    implementation("com.github.hamza-cskn.obliviate-invs:core:4.3.0")
+    implementation("com.github.hamza-cskn.obliviate-invs:pagination:4.3.0")
     compileOnly("com.destroystokyo.paper:paper-api:1.12.2-R0.1-SNAPSHOT")
     compileOnly("org.spigotmc:spigot-api:1.12.2-R0.1-SNAPSHOT")
     compileOnly("org.spigotmc:spigot:1.12.2-R0.1-SNAPSHOT")
