@@ -6,4 +6,6 @@ description: Core plugin for anarchived
 
 commands:
   goto:
-    description: Teleports a player to any save
+    description: Teleports a player to any specific save and variant
+  go:
+    description: GUI-based base/server search to quickly find a save
