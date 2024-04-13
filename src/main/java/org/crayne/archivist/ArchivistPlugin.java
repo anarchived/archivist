@@ -1,12 +1,16 @@
 package org.crayne.archivist;
 
 import mc.obliviate.inventory.InventoryAPI;
+import org.apache.logging.log4j.LogManager;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.crayne.archivist.command.GoCommand;
 import org.crayne.archivist.command.GoToCommand;
+import org.crayne.archivist.command.ReindexCommand;
+import org.crayne.archivist.consolefilter.LogSpamFilter;
 import org.crayne.archivist.index.IndexingException;
 import org.crayne.archivist.index.cached.CachedServerIndex;
+import org.crayne.archivist.inventory.ArchivistInventory;
 import org.crayne.archivist.listeners.FrozenWorldListener;
 import org.crayne.archivist.world.SpawnWorld;
 import org.jetbrains.annotations.NotNull;
@@ -25,7 +29,8 @@ public class ArchivistPlugin extends JavaPlugin {
         INSTANCE = this;
         registerListeners(
                 spawnWorld = new SpawnWorld(),
-                new FrozenWorldListener()
+                new FrozenWorldListener(),
+                new ArchivistInventory()
         );
         serverIndex = CachedServerIndex.loadServerIndex()
                 .orElseThrow(() -> new IndexingException("Cannot load empty archive"));
@@ -33,6 +38,9 @@ public class ArchivistPlugin extends JavaPlugin {
         new InventoryAPI(this).init();
         getCommand("goto").setExecutor(new GoToCommand());
         getCommand("go").setExecutor(new GoCommand());
+        getCommand("reindex").setExecutor(new ReindexCommand());
+
+        ((org.apache.logging.log4j.core.Logger) LogManager.getRootLogger()).addFilter(new LogSpamFilter());
     }
 
     public void onDisable() {

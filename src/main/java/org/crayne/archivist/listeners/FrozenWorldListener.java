@@ -1,10 +1,12 @@
 package org.crayne.archivist.listeners;
 
 import com.destroystokyo.paper.event.entity.EntityPathfindEvent;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Nameable;
 import org.bukkit.block.Block;
 import org.bukkit.block.Container;
+import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -12,13 +14,16 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.entity.*;
-import org.bukkit.event.player.PlayerDropItemEvent;
-import org.bukkit.event.player.PlayerInteractAtEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.event.world.ChunkLoadEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
+import org.crayne.archivist.ArchivistPlugin;
 import org.crayne.archivist.gui.ContainerViewGUI;
+import org.crayne.archivist.gui.ServerListGUI;
+import org.crayne.archivist.inventory.ArchivistInventory;
 import org.jetbrains.annotations.NotNull;
 
 public class FrozenWorldListener implements Listener {
@@ -34,18 +39,50 @@ public class FrozenWorldListener implements Listener {
     }
 
     @EventHandler
+    public void entityShootBow(EntityShootBowEvent event) {
+        if (event.getProjectile() instanceof Arrow && event.getEntity() instanceof Player)
+            event.setConsumeArrow(false);
+    }
+
+    @EventHandler
     public void blockInteractEvent(@NotNull final PlayerInteractEvent ev) {
         final Block block = ev.getClickedBlock();
-        if (block == null) return;
+        if (block == null) {
+            if (ArchivistInventory.isBrowserItem(ev.getItem()))
+                new ServerListGUI(ev.getPlayer()).open();
 
+            cancelDepletion(ev);
+            return;
+        }
         ev.setCancelled(true);
         if (block.getType() == Material.ENDER_CHEST) return;
 
-        if (!(block.getState() instanceof final Container container)) return;
-        if (!(block.getState() instanceof final Nameable nameable)) return;
+        if (!(block.getState() instanceof final Container container)
+                || !(block.getState() instanceof final Nameable nameable))
+            return;
 
         final Inventory inventory = container.getInventory();
         new ContainerViewGUI(ev.getPlayer(), inventory, nameable.getCustomName()).open();
+    }
+
+    private static void cancelDepletion(@NotNull final PlayerInteractEvent ev) {
+        final Material material = ev.getMaterial();
+        final boolean depletes = switch (material) {
+            case ENDER_PEARL, FIREWORK -> true;
+            default -> false;
+        };
+        if (material == Material.EMPTY_MAP)
+            ev.setCancelled(true);
+
+        final ItemStack before = ev.getItem().clone();
+        final EquipmentSlot slot = ev.getHand();
+        final PlayerInventory inv = ev.getPlayer().getInventory();
+
+        if (!depletes) return;
+
+        Bukkit.getScheduler().runTaskLater(ArchivistPlugin.instance(),
+                () -> inv.setItem(slot, before),
+                1L);
     }
 
     @EventHandler

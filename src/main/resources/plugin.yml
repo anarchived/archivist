@@ -9,3 +9,5 @@ commands:
     description: Teleports a player to any specific save and variant
   go:
     description: GUI-based base/server search to quickly find a save
+  reindex:
+    description: Reindexes the entire archive automatically

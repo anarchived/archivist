@@ -45,7 +45,7 @@ public final class CachedServerIndex {
     }
 
     @NotNull
-    private Map<String, Dimension> collectBlobs() {
+    public Map<String, Dimension> collectBlobs() {
         return cachedServers
                 .values()
                 .stream()
