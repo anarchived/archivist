@@ -1,8 +1,11 @@
 package org.crayne.archivist.index.cached;
 
+import org.crayne.archivist.index.blob.region.World;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 public final class CachedSave {
 
@@ -25,6 +28,15 @@ public final class CachedSave {
     @NotNull
     public CachedSaveData data() {
         return data;
+    }
+
+    @NotNull
+    public Stream<Map.Entry<String, World>> streamWorldEntries() {
+        return data()
+                .variantWorldDefinitions()
+                .values()
+                .stream()
+                .map(s -> Map.entry(s, data().world()));
     }
 
     public boolean equals(final Object obj) {

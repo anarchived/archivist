@@ -1,13 +1,12 @@
 package org.crayne.archivist.index.blob.region;
 
-import org.bukkit.World;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Optional;
 
-public enum Dimension {
+public enum World {
 
     OVERWORLD("world"),
     NETHER("world_nether"),
@@ -16,7 +15,7 @@ public enum Dimension {
     @NotNull
     private final String worldFolderName;
 
-    Dimension(@NotNull final String worldFolderName) {
+    World(@NotNull final String worldFolderName) {
         this.worldFolderName = worldFolderName;
     }
 
@@ -31,18 +30,18 @@ public enum Dimension {
     }
 
     @NotNull
-    public static Optional<Dimension> of(@NotNull final String name) {
+    public static Optional<World> of(@NotNull final String name) {
         return Arrays.stream(values())
                 .filter(d -> d.name().equalsIgnoreCase(name))
                 .findAny();
     }
 
     @NotNull
-    public World.Environment environment() {
+    public org.bukkit.World.Environment environment() {
         return switch (this) {
-            case OVERWORLD -> World.Environment.NORMAL;
-            case END -> World.Environment.THE_END;
-            case NETHER -> World.Environment.NETHER;
+            case OVERWORLD -> org.bukkit.World.Environment.NORMAL;
+            case END -> org.bukkit.World.Environment.THE_END;
+            case NETHER -> org.bukkit.World.Environment.NETHER;
         };
     }
 

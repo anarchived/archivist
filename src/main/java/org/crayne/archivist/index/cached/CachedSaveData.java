@@ -1,13 +1,11 @@
 package org.crayne.archivist.index.cached;
 
 import org.bukkit.Bukkit;
-import org.bukkit.World;
+import org.crayne.archivist.index.blob.region.World;
 import org.crayne.archivist.index.blob.save.Position;
-import org.crayne.archivist.index.blob.region.Dimension;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public final class CachedSaveData {
 
@@ -15,17 +13,22 @@ public final class CachedSaveData {
     private final Position position;
 
     @NotNull
-    private final Dimension dimension;
+    private final World world;
 
     @NotNull
     private final Map<String, String> variantWorldDefinitions;
 
+    @NotNull
+    private final String markdownContent;
+
 
     public CachedSaveData(@NotNull final Position position,
-                          @NotNull final Dimension dimension,
+                          @NotNull final World world,
+                          @NotNull final String markdownContent,
                           @NotNull final Map<String, String> variantWorldDefinitions) {
         this.position = position;
-        this.dimension = dimension;
+        this.world = world;
+        this.markdownContent = markdownContent;
         this.variantWorldDefinitions = new HashMap<>(variantWorldDefinitions);
     }
 
@@ -35,23 +38,18 @@ public final class CachedSaveData {
     }
 
     @NotNull
-    public Map<String, String> variantWorldDefinitionsSorted() {
-        return variantWorldDefinitions.entrySet()
-                .stream()
-                .sorted(Map.Entry.comparingByKey())
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        Map.Entry::getValue,
-                        (e1, e2) -> e1, LinkedHashMap::new)
-                );
+    public String markdownContent() {
+        return markdownContent;
     }
 
     @NotNull
-    public List<Map.Entry<String, World>> variantWorldsSorted() {
-        return variantWorldDefinitionsSorted().entrySet()
-                .stream()
-                .map(e -> Map.entry(e.getKey(), Bukkit.getWorld(e.getValue())))
-                .toList();
+    public Map<String, String> variantWorldDefinitionsSorted() {
+        return MapUtil.sortMapByKey(variantWorldDefinitions);
+    }
+
+    @NotNull
+    public List<Map.Entry<String, org.bukkit.World>> variantWorldsSorted() {
+        return MapUtil.mapKeys(variantWorldDefinitionsSorted(), Bukkit::getWorld);
     }
 
     @NotNull
@@ -60,8 +58,8 @@ public final class CachedSaveData {
     }
 
     @NotNull
-    public Dimension dimension() {
-        return dimension;
+    public World world() {
+        return world;
     }
 
     public boolean equals(final Object obj) {

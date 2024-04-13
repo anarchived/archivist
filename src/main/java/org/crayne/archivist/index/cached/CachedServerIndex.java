@@ -4,17 +4,17 @@ import com.google.gson.Gson;
 import org.apache.commons.io.FileUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.World;
 import org.crayne.archivist.ArchivistPlugin;
 import org.crayne.archivist.index.IndexingException;
 import org.crayne.archivist.index.archive.RootIndex;
+import org.crayne.archivist.index.archive.SaveIndex;
 import org.crayne.archivist.index.archive.ServerIndex;
 import org.crayne.archivist.index.archive.ServerListIndex;
 import org.crayne.archivist.index.blob.BlobField;
 import org.crayne.archivist.index.blob.BlobLevel;
 import org.crayne.archivist.index.blob.save.SaveIdentifier;
 import org.crayne.archivist.index.blob.save.Position;
-import org.crayne.archivist.index.blob.region.Dimension;
+import org.crayne.archivist.index.blob.region.World;
 import org.crayne.archivist.index.blob.region.Region;
 import org.jetbrains.annotations.NotNull;
 
@@ -25,6 +25,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public final class CachedServerIndex {
 
@@ -32,7 +33,7 @@ public final class CachedServerIndex {
     private final Map<String, CachedServer> cachedServers;
 
     @NotNull
-    private final Map<String, Dimension> blobs;
+    private final Map<String, World> blobs;
 
     public CachedServerIndex(@NotNull final Map<String, CachedServer> cachedServers) {
         this.cachedServers = new HashMap<>(cachedServers);
@@ -45,22 +46,15 @@ public final class CachedServerIndex {
     }
 
     @NotNull
-    public Map<String, Dimension> collectBlobs() {
-        return cachedServers
-                .values()
-                .stream()
-                .flatMap(server -> server
-                        .saves()
-                        .values()
-                        .stream()
-                        .flatMap(b -> b
-                                .data()
-                                .variantWorldDefinitions()
-                                .values()
-                                .stream()
-                                .map(s -> Map.entry(s, b.data().dimension()))))
-                .collect(Collectors.toSet())
-                .stream()
+    public Stream<CachedServer> cachedServerStream() {
+        return cachedServers.values().stream();
+    }
+
+    @NotNull
+    public Map<String, World> collectBlobs() {
+        return cachedServerStream()
+                .flatMap(CachedServer::streamWorldEntries)
+                .distinct()
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
@@ -80,7 +74,7 @@ public final class CachedServerIndex {
         if (foundWorld == null)
             throw new IndexingException("Could not find save variant '" + variant + "'");
 
-        final World world = Bukkit.getWorld(foundWorld);
+        final org.bukkit.World world = Bukkit.getWorld(foundWorld);
         if (world == null)
             throw new IndexingException("Internal error; This world has not been loaded yet");
 
@@ -99,7 +93,7 @@ public final class CachedServerIndex {
         if (Files.exists(cachedServerIndexPath())) {
             ArchivistPlugin.log("Loading server index from cached server-index.json", Level.INFO);
             final CachedServerIndex cached = loadCachedServerIndex();
-            cached.blobs.forEach((worldName, dimension) -> BlobLevel.createWorld(worldName, dimension.environment()));
+            cached.blobs.forEach((worldName, world) -> BlobLevel.createWorld(worldName, world.environment()));
             return Optional.of(cached);
         }
         ArchivistPlugin.log("Server index file not found; Creating a new index from archive...", Level.INFO);
@@ -144,13 +138,19 @@ public final class CachedServerIndex {
             final Map<String, Set<SaveIdentifier>> indexedSaves = serverIndex.indexedSaves();
             final BlobField blobField = serverIndex.blobField();
             final Map<BlobLevel, Collection<Region>> blobRegions = blobField.blobRegions();
+            final String markdownContent;
+            try {
+                markdownContent = Files.readString(serverIndex.indexFile().orElseThrow().indexFilePath());
+            } catch (final IOException e) {
+                throw new IndexingException(e);
+            }
 
             ArchivistPlugin.log("Found server index " + serverName
                     + " with " + indexedSaves.size()
                     + " saves and " + blobRegions.size() + " blobs", Level.INFO);
 
             copyRemainingRegionFiles(blobRegions);
-            final CachedServer server = createCachedServer(serverName, indexedSaves, blobField);
+            final CachedServer server = createCachedServer(serverName, markdownContent, indexedSaves, blobField);
             serverCache.put(serverName, server);
         });
         return cacheIndex(new CachedServerIndex(serverCache));
@@ -184,7 +184,7 @@ public final class CachedServerIndex {
         final Path rootDirectory = rootDirectory();
 
         blobRegions.forEach(((blobLevel, regions) -> {
-            final World world = blobLevel.createWorld();
+            final org.bukkit.World world = blobLevel.createWorld();
 
             ArchivistPlugin.log("Created blob level " + world.getName(), Level.INFO);
 
@@ -194,7 +194,7 @@ public final class CachedServerIndex {
             if (!Files.isDirectory(worldFolder))
                 throw new IndexingException("The blob path is not a valid directory; Cannot copy region files");
 
-            final Path regionFolder = blobLevel.dimension().resolveRegionFolder(worldFolder);
+            final Path regionFolder = blobLevel.world().resolveRegionFolder(worldFolder);
             try {
                 FileUtils.deleteDirectory(regionFolder.toFile());
                 Files.createDirectory(regionFolder);
@@ -203,7 +203,7 @@ public final class CachedServerIndex {
                     Files.copy(region.source(), regionFolder.resolve(region.source().getFileName()), StandardCopyOption.REPLACE_EXISTING);
                 }
             } catch (final IOException e) {
-                throw new RuntimeException(e);
+                throw new IndexingException(e);
             }
             ArchivistPlugin.log("Successfully copied all region files to the new blob", Level.INFO);
         }));
@@ -211,6 +211,7 @@ public final class CachedServerIndex {
 
     @NotNull
     public static CachedServer createCachedServer(@NotNull final String serverName,
+                                                  @NotNull final String markdownContent,
                                                   @NotNull final Map<String, Set<SaveIdentifier>> indexedSaves,
                                                   @NotNull final BlobField blobField) {
         final Map<String, CachedSave> saveCache = new HashMap<>();
@@ -220,8 +221,7 @@ public final class CachedServerIndex {
             final Map<String, String> variantCache = new HashMap<>();
             final Set<SaveIdentifier> variants = indexedSaves.get(saveName);
 
-            Position position = null;
-            Dimension dimension = null;
+            SaveIndex saveIndex = null;
 
             for (final SaveIdentifier variant : variants) {
                 final BlobLevel blobLevel = blobField
@@ -231,17 +231,22 @@ public final class CachedServerIndex {
                 final String fullIdentifier = blobLevel.fullIdentifier();
                 ArchivistPlugin.log("Caching save variant " + variant + " in " + fullIdentifier, Level.INFO);
                 variantCache.put(variant.saveVariant(), fullIdentifier);
-                position = variant.position();
-                dimension = blobLevel.dimension();
+                saveIndex = variant.save();
             }
-            if (position == null)
-                throw new IndexingException("Cannot load indexed save without location information");
+            if (saveIndex == null)
+                throw new IndexingException("Cannot load indexed save with no variants");
 
-            final CachedSaveData data = new CachedSaveData(position, dimension, variantCache);
+            final String saveMarkdownContent;
+            try {
+                saveMarkdownContent = Files.readString(saveIndex.indexFile().orElseThrow().indexFilePath());
+            } catch (final IOException e) {
+                throw new RuntimeException(e);
+            }
+            final CachedSaveData data = new CachedSaveData(saveIndex.position(), saveIndex.world(), saveMarkdownContent, variantCache);
             final CachedSave save = new CachedSave(saveName, data);
             saveCache.put(saveName, save);
         }
-        return new CachedServer(serverName, saveCache);
+        return new CachedServer(serverName, saveCache, markdownContent);
     }
 
     public boolean equals(Object obj) {

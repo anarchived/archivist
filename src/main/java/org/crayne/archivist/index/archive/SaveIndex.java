@@ -5,7 +5,7 @@ import org.crayne.archivist.index.IndexingException;
 import org.crayne.archivist.index.blob.Blob;
 import org.crayne.archivist.index.blob.save.SaveIdentifier;
 import org.crayne.archivist.index.blob.save.Position;
-import org.crayne.archivist.index.blob.region.Dimension;
+import org.crayne.archivist.index.blob.region.World;
 import org.crayne.archivist.index.blob.region.Region;
 import org.crayne.archivist.index.file.section.IndexSection;
 import org.crayne.archivist.index.file.section.Section;
@@ -24,7 +24,7 @@ import java.util.logging.Level;
 public class SaveIndex extends ArchiveIndex {
 
     @Nullable
-    private Dimension dimension;
+    private World world;
 
     @Nullable
     private Position position;
@@ -50,19 +50,29 @@ public class SaveIndex extends ArchiveIndex {
         if (!(locationSection instanceof final MapSection location))
             throw new IndexingException("Failed to index save; Location section is not of type map");
 
-        final String dimensionName = location.value().get("Dimension");
-        if (dimensionName == null)
-            throw new IndexingException("Failed to index save; Location does not include 'Dimension' key");
+        final String worldName = location.value().get("World");
+        if (worldName == null)
+            throw new IndexingException("Failed to index save; Location does not include 'World' key");
 
         final String positionString = location.value().get("Position");
         if (positionString == null)
             throw new IndexingException("Failed to index save; Location does not include 'Position' key");
 
-        this.dimension = Dimension.of(dimensionName)
-                .orElseThrow(() -> new IndexingException("Failed to index save; Dimension is not valid (" + dimensionName + ")"));
+        this.world = World.of(worldName)
+                .orElseThrow(() -> new IndexingException("Failed to index save; World is not valid (" + worldName + ")"));
 
         this.position = Position.of(positionString)
                 .orElseThrow(() -> new IndexingException("Failed to index save; Position is not valid (" + positionString + ")"));
+    }
+
+    @NotNull
+    public Position position() {
+        return Objects.requireNonNull(position);
+    }
+
+    @NotNull
+    public World world() {
+        return Objects.requireNonNull(world);
     }
 
     @NotNull
@@ -73,7 +83,7 @@ public class SaveIndex extends ArchiveIndex {
             "Archived Dates", SectionType.ENUMERATION.createSection(),
             "Sources", SectionType.ENUMERATION.createSection(),
             "Description", SectionType.TEXT.createSection(),
-            "Additional Information", SectionType.TEXT.createSection(true)
+            "Additional Info", SectionType.TEXT.createSection(true)
     );
 
     @NotNull
@@ -92,7 +102,7 @@ public class SaveIndex extends ArchiveIndex {
 
     @NotNull
     public Region parseRegion(@NotNull final String fileName, @NotNull final Path source) {
-        verifyDimension();
+        verifyWorld();
 
         // region filenames follow the format r.X.Z.mca, so we only care about indices 1 and 2 when splitting by '.'
         final String[] split = fileName.split("\\.");
@@ -106,14 +116,14 @@ public class SaveIndex extends ArchiveIndex {
         } catch (final NumberFormatException e) {
             throw new IndexingException(e);
         }
-        assert dimension != null;
-        return new Region(regionX, regionZ, dimension, source);
+        assert world != null;
+        return new Region(regionX, regionZ, world, source);
     }
 
     @NotNull
     public Blob createBlob(@NotNull final Path path) {
         ArchivistPlugin.log("Creating blob for " + path.getFileName(), Level.INFO);
-        verifyDimension();
+        verifyWorld();
         final Path regionDirectory = path.resolve("region");
 
         final Set<Region> regions = new HashSet<>();
@@ -122,13 +132,13 @@ public class SaveIndex extends ArchiveIndex {
         } catch (final IOException e) {
             throw new IndexingException(e);
         }
-        assert dimension != null;
-        return new Blob(regions, dimension);
+        assert world != null;
+        return new Blob(regions, world);
     }
 
-    private void verifyDimension() {
-        if (dimension == null)
-            throw new IndexingException("Could not index save; Dimension was not loaded correctly");
+    private void verifyWorld() {
+        if (world == null)
+            throw new IndexingException("Could not index save; World was not loaded correctly");
     }
 
     @NotNull
@@ -159,7 +169,7 @@ public class SaveIndex extends ArchiveIndex {
             throw new IndexingException("Cannot add save with unknown position to archive (" + path + ")");
 
         blobs.put(uuid, blob);
-        variants.add(new SaveIdentifier(saveName, variant, uuid, position));
+        variants.add(new SaveIdentifier(saveName, variant, uuid, this));
         return Optional.empty();
     }
 }

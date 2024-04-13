@@ -5,10 +5,17 @@ import mc.obliviate.inventory.pagination.PaginationManager;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
+import org.crayne.archivist.gui.markdown.MarkdownBookRenderer;
+import org.crayne.archivist.gui.util.LoreUtil;
 import org.crayne.archivist.index.cached.CachedSave;
 import org.crayne.archivist.index.cached.CachedServer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class SaveListGUI extends PagedGUI {
 
@@ -42,14 +49,36 @@ public class SaveListGUI extends PagedGUI {
         return query.replaceAll("[_ ]", "").toLowerCase();
     }
 
+    @NotNull
+    private static final List<String> LORE_DEFAULT = List.of(
+            ChatColor.YELLOW + "Left click to see archived dates",
+            ChatColor.YELLOW + "Right click to see more information",
+            "",
+            ChatColor.GOLD + "Archived dates:"
+    );
+
     public void update(@NotNull final PaginationManager pagination) {
         for (final CachedSave save : server.saves().values()) {
             final String nameSanitized = sanitizeQuery(save.name());
             if (!query.isEmpty() && !nameSanitized.contains(query)) continue;
 
-            pagination.addItem(new Icon(Material.EMERALD)
+            final List<String> lore = new ArrayList<>(LORE_DEFAULT);
+            LoreUtil.addRemainingLines(lore, save.data()
+                    .variantWorldsSorted()
+                    .stream()
+                    .map(Map.Entry::getKey)
+                    .toList());
+
+            pagination.addItem(new Icon(Material.BOOK)
                     .setName(ChatColor.GOLD + save.name())
-                    .onClick(e -> new SaveGUI(this, player, save).open()));
+                    .setLore(lore)
+                    .onClick(e -> {
+                        if (e.getClick() == ClickType.RIGHT || e.getClick() == ClickType.SHIFT_RIGHT) {
+                            MarkdownBookRenderer.displayMarkdownToPlayer(player, save.data().markdownContent());
+                            return;
+                        }
+                        new SaveGUI(this, player, save).open();
+                    }));
         }
     }
 

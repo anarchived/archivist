@@ -1,7 +1,7 @@
 package org.crayne.archivist.index.blob;
 
 import org.crayne.archivist.index.IndexingException;
-import org.crayne.archivist.index.blob.region.Dimension;
+import org.crayne.archivist.index.blob.region.World;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
@@ -9,26 +9,26 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class BlobDimension {
+public class BlobWorld {
 
     @NotNull
     private final Map<Integer, Blob> blobs;
 
     @NotNull
-    private final Dimension dimension;
+    private final World world;
 
-    public BlobDimension(@NotNull final Dimension dimension) {
+    public BlobWorld(@NotNull final World world) {
         this.blobs = new HashMap<>();
-        this.dimension = dimension;
+        this.world = world;
     }
 
     public void merge(@NotNull final Blob blob) {
-        if (blob.dimension() != dimension)
-            throw new IndexingException("Cannot merge blobs of different dimensions together");
+        if (blob.world() != world)
+            throw new IndexingException("Cannot merge blobs of different worlds together");
 
         int i = 0;
         for (; i < blobs.size(); i++) {
-            final Blob nextBlob = blobs.getOrDefault(i, new Blob(blob.dimension()));
+            final Blob nextBlob = blobs.getOrDefault(i, new Blob(blob.world()));
 
             // if the blob can be merged, merge it into the lowest level possible and return
             if (nextBlob.mergeRegions(blob)) return;
@@ -46,8 +46,8 @@ public class BlobDimension {
     }
 
     @NotNull
-    public Dimension dimension() {
-        return dimension;
+    public World world() {
+        return world;
     }
 
     @NotNull
@@ -57,9 +57,9 @@ public class BlobDimension {
 
     @NotNull
     public String toString() {
-        return "BlobDimension{" +
+        return "BlobWorld{" +
                 "blobs=" + blobs +
-                ", dimension=" + dimension +
+                ", world=" + world +
                 '}';
     }
 }

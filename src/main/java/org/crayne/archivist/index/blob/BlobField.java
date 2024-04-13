@@ -1,7 +1,7 @@
 package org.crayne.archivist.index.blob;
 
+import org.crayne.archivist.index.blob.region.World;
 import org.crayne.archivist.index.blob.save.SaveIdentifier;
-import org.crayne.archivist.index.blob.region.Dimension;
 import org.crayne.archivist.index.blob.region.Region;
 import org.jetbrains.annotations.NotNull;
 
@@ -11,13 +11,13 @@ import java.util.stream.Collectors;
 public class BlobField {
 
     @NotNull
-    private final Map<Dimension, BlobDimension> blobDimensionMap;
+    private final Map<World, BlobWorld> blobWorldMap;
 
     @NotNull
     private final String serverTitle;
 
     public BlobField(@NotNull final String serverTitle) {
-        this.blobDimensionMap = new HashMap<>();
+        this.blobWorldMap = new HashMap<>();
         this.serverTitle = serverTitle;
     }
 
@@ -27,20 +27,20 @@ public class BlobField {
     }
 
     public void merge(@NotNull final Blob blob) {
-        final Dimension dimension = blob.dimension();
-        final BlobDimension blobDimension = blobDimensionMap.getOrDefault(dimension, new BlobDimension(dimension));
-        blobDimension.merge(blob);
-        blobDimensionMap.put(dimension, blobDimension);
+        final World world = blob.world();
+        final BlobWorld blobWorld = blobWorldMap.getOrDefault(world, new BlobWorld(world));
+        blobWorld.merge(blob);
+        blobWorldMap.put(world, blobWorld);
     }
 
     @NotNull
     public Optional<BlobLevel> findBlobLevel(@NotNull final UUID regionUUID) {
-        for (final Dimension dimension : blobDimensionMap.keySet()) {
-            final BlobDimension blobDimension = blobDimensionMap.get(dimension);
-            final int blobIndex = blobDimension.findBlobIndex(regionUUID);
+        for (final World world : blobWorldMap.keySet()) {
+            final BlobWorld blobWorld = blobWorldMap.get(world);
+            final int blobIndex = blobWorld.findBlobIndex(regionUUID);
             if (blobIndex == -1) continue;
 
-            return Optional.of(new BlobLevel(blobIndex, dimension, serverTitle));
+            return Optional.of(new BlobLevel(blobIndex, world, serverTitle));
         }
         return Optional.empty();
     }
@@ -51,25 +51,25 @@ public class BlobField {
     }
 
     @NotNull
-    public Map<Dimension, BlobDimension> blobDimensions() {
-        return Collections.unmodifiableMap(blobDimensionMap);
+    public Map<World, BlobWorld> blobWorlds() {
+        return Collections.unmodifiableMap(blobWorldMap);
     }
     
     @NotNull
     public Map<BlobLevel, Collection<Region>> blobRegions() {
         final Map<BlobLevel, Collection<Region>> result = new HashMap<>();
         
-        for (final Dimension dimension : blobDimensionMap.keySet()) {
-            final BlobDimension blobDimension = blobDimensionMap.get(dimension);
-            blobDimension.blobs().forEach((index, blob) ->
-                    result.put(new BlobLevel(index, dimension, serverTitle), blob.regions()));
+        for (final World world : blobWorldMap.keySet()) {
+            final BlobWorld blobWorld = blobWorldMap.get(world);
+            blobWorld.blobs().forEach((index, blob) ->
+                    result.put(new BlobLevel(index, world, serverTitle), blob.regions()));
         }
         return result;
     }
 
     @NotNull
     public Set<BlobLevel> blobLevels() {
-        return blobDimensions()
+        return blobWorlds()
                 .entrySet()
                 .stream()
                 .flatMap(e -> e.getValue()
@@ -84,7 +84,7 @@ public class BlobField {
     @NotNull
     public String toString() {
         return "BlobField{" +
-                "blobDimensionMap=" + blobDimensionMap +
+                "blobWorldMap=" + blobWorldMap +
                 '}';
     }
 }

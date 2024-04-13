@@ -19,7 +19,8 @@ public class LogSpamFilter implements Filter {
             "Wrong location! (",
             " but it was marked as removed already",
             "Skipping BlockEntity with id ",
-            "Ignoring unknown attribute 'forge.swimSpeed'"
+            "Ignoring unknown attribute 'forge.swimSpeed'",
+            "Unable to find spawn biome"
     );
 
     public Result filter(@NotNull final LogEvent event) {

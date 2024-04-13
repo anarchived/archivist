@@ -4,7 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Path;
 
-public record Region(int regionX, int regionZ, @NotNull Dimension dimension, @NotNull Path source) {
+public record Region(int regionX, int regionZ, @NotNull World world, @NotNull Path source) {
 
     public boolean equals(final Object o) {
         if (this == o) return true;
@@ -14,13 +14,13 @@ public record Region(int regionX, int regionZ, @NotNull Dimension dimension, @No
 
         if (regionX != region.regionX) return false;
         if (regionZ != region.regionZ) return false;
-        return dimension == region.dimension;
+        return world == region.world;
     }
 
     public int hashCode() {
         int result = regionX;
         result = 31 * result + regionZ;
-        result = 31 * result + dimension.hashCode();
+        result = 31 * result + world.hashCode();
         return result;
     }
 
@@ -29,7 +29,7 @@ public record Region(int regionX, int regionZ, @NotNull Dimension dimension, @No
         return "Region{" +
                 "regionX=" + regionX +
                 ", regionZ=" + regionZ +
-                ", dimension=" + dimension +
+                ", world=" + world +
                 '}';
     }
 

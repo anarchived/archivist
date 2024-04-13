@@ -1,7 +1,7 @@
 package org.crayne.archivist.index.blob;
 
 import org.crayne.archivist.index.IndexingException;
-import org.crayne.archivist.index.blob.region.Dimension;
+import org.crayne.archivist.index.blob.region.World;
 import org.crayne.archivist.index.blob.region.Region;
 import org.jetbrains.annotations.NotNull;
 
@@ -13,30 +13,30 @@ public class Blob {
     private final Map<UUID, Region> regions;
 
     @NotNull
-    private final Dimension dimension;
+    private final World world;
 
-    public Blob(@NotNull final Collection<Region> regions, @NotNull final Dimension dimension) {
-        this.dimension = dimension;
-        verifyRegionDimensions(regions);
+    public Blob(@NotNull final Collection<Region> regions, @NotNull final World world) {
+        this.world = world;
+        verifyRegionWorlds(regions);
 
         this.regions = new HashMap<>();
         regions.forEach(region -> this.regions.put(UUID.randomUUID(), region));
     }
 
-    public Blob(@NotNull final Dimension dimension) {
-        this(Collections.emptySet(), dimension);
+    public Blob(@NotNull final World world) {
+        this(Collections.emptySet(), world);
     }
 
-    private void verifyRegionDimensions(@NotNull final Collection<Region> regions) {
+    private void verifyRegionWorlds(@NotNull final Collection<Region> regions) {
         for (final Region region : regions) {
-            if (dimension != region.dimension())
-                throw new IndexingException("Cannot add regions of different dimension to a blob");
+            if (world != region.world())
+                throw new IndexingException("Cannot add regions of different world to a blob");
         }
     }
 
     @NotNull
-    public Dimension dimension() {
-        return dimension;
+    public World world() {
+        return world;
     }
 
     @NotNull
@@ -67,7 +67,7 @@ public class Blob {
     public String toString() {
         return "Blob{" +
                 "regions=" + regions +
-                ", dimension=" + dimension +
+                ", world=" + world +
                 '}';
     }
 
