@@ -31,7 +31,7 @@ public class GoToCommand implements CommandExecutor {
                             args[2].replace("_", " ")
                     );
             p.teleport(location);
-            p.sendMessage(ChatColor.GOLD + "Teleported you to " + args[0] + ": " + args[1] + "-" + args[2]);
+            p.sendMessage(ChatColor.GOLD + "Teleported you to " + ChatColor.GRAY + args[0] + ": " + args[1] + "-" + args[2]);
             return true;
         } catch (final IndexingException e) {
             sender.sendMessage(ChatColor.RED + e.getMessage());

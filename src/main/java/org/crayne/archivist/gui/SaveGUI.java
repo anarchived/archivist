@@ -31,7 +31,7 @@ public class SaveGUI extends PagedGUI {
                     .onClick(e -> {
                         player.closeInventory();
                         player.teleport(data.position().toLocation(variant.getValue()));
-                        player.sendMessage(ChatColor.GOLD + "Teleported you to " + save.name() + "-" + variant.getKey());
+                        player.sendMessage(ChatColor.GOLD + "Teleported you to " + ChatColor.GRAY + save.name() + "-" + variant.getKey());
                     }));
         }
     }
