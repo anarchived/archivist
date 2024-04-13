@@ -85,7 +85,7 @@ public final class CachedServerIndex {
             throw new IndexingException("Internal error; This world has not been loaded yet");
 
         final Position position = foundSave.data().position();
-        return new Location(world, position.x(), position.y(), position.z());
+        return position.toLocation(world);
     }
 
     @NotNull

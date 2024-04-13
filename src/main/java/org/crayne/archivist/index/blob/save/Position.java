@@ -1,5 +1,7 @@
 package org.crayne.archivist.index.blob.save;
 
+import org.bukkit.Location;
+import org.bukkit.World;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -35,6 +37,11 @@ public final class Position {
         } catch (final NumberFormatException e) {
             return Optional.empty();
         }
+    }
+
+    @NotNull
+    public Location toLocation(@NotNull final World world) {
+        return new Location(world, x, y, z);
     }
 
     public double x() {
