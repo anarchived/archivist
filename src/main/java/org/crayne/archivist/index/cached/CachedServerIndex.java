@@ -189,18 +189,18 @@ public final class CachedServerIndex {
             ArchivistPlugin.log("Created blob level " + world.getName(), Level.INFO);
 
             final String fullIdentifier = blobLevel.fullIdentifier();
-            final Path worldFolder = rootDirectory.resolve(fullIdentifier);
+            final Path worldDirectory = rootDirectory.resolve(fullIdentifier);
 
-            if (!Files.isDirectory(worldFolder))
+            if (!Files.isDirectory(worldDirectory))
                 throw new IndexingException("The blob path is not a valid directory; Cannot copy region files");
 
-            final Path regionFolder = blobLevel.world().resolveRegionFolder(worldFolder);
+            final Path regionDirectory = blobLevel.world().resolveRegionDirectory(worldDirectory);
             try {
-                FileUtils.deleteDirectory(regionFolder.toFile());
-                Files.createDirectory(regionFolder);
+                FileUtils.deleteDirectory(regionDirectory.toFile());
+                Files.createDirectory(regionDirectory);
 
                 for (final Region region : regions) {
-                    Files.copy(region.source(), regionFolder.resolve(region.source().getFileName()), StandardCopyOption.REPLACE_EXISTING);
+                    Files.copy(region.source(), regionDirectory.resolve(region.source().getFileName()), StandardCopyOption.REPLACE_EXISTING);
                 }
             } catch (final IOException e) {
                 throw new IndexingException(e);

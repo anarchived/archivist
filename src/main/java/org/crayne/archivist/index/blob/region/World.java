@@ -13,15 +13,15 @@ public enum World {
     END("world_the_end");
 
     @NotNull
-    private final String worldFolderName;
+    private final String worldDirectoryName;
 
-    World(@NotNull final String worldFolderName) {
-        this.worldFolderName = worldFolderName;
+    World(@NotNull final String worldDirectoryName) {
+        this.worldDirectoryName = worldDirectoryName;
     }
 
     @NotNull
-    public String worldFolderName() {
-        return worldFolderName;
+    public String worldDirectoryName() {
+        return worldDirectoryName;
     }
 
     @NotNull
@@ -46,7 +46,7 @@ public enum World {
     }
 
     @NotNull
-    public Path resolveRegionFolder(@NotNull final Path path) {
+    public Path resolveRegionDirectory(@NotNull final Path path) {
         return switch (this) {
             case OVERWORLD -> path.resolve("region");
             case END -> path.resolve("DIM1").resolve("region");
