@@ -4,16 +4,18 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.minecraft.server.v1_12_R1.PacketDataSerializer;
 import net.minecraft.server.v1_12_R1.PacketPlayOutCustomPayload;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
+import org.crayne.archivist.gui.book.BookTextWrapper;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class MarkdownBookRenderer {
 
@@ -53,61 +55,29 @@ public class MarkdownBookRenderer {
             case 2 -> ChatColor.ITALIC + ChatColor.BOLD.toString();
             default -> ChatColor.ITALIC.toString();
         };
-        return String.join("", decoration);
+        return String.join("", decoration)
+               + line.substring(count).trim();
     }
 
     @NotNull
-    public static String formatLine(@NotNull final String line, @NotNull final String decoration) {
-        return decoration
-                + line.substring(countPoundSymbols(line)).trim();
+    public static String renderMarkdown(@NotNull final String markdownText) {
+        return Arrays.stream(markdownText.split("\n"))
+                .map(MarkdownBookRenderer::decorateLineMarkdown)
+                .map(StringEscapeUtils::unescapeJava)
+                .map(s -> s.replace("\\", ""))
+                .collect(Collectors.joining("\n" + ChatColor.RESET));
     }
 
-    public static final int
-            MAX_LINES_PER_PAGE = 14,
-            MAX_CHARS_PER_LINE = 20,
-            MAX_CHARS_PER_PAGE = 256,
-            MAX_PAGES = 50;
-
     @NotNull
-    public static String @NotNull [] renderMarkDownToBookContent(@NotNull final String markdownContent) {
-        final List<String> result = new ArrayList<>();
-        StringBuilder currentPage = new StringBuilder();
-        int currentPageLength = 0;
-        int lines = 0;
-
-        for (final String line : markdownContent.split("\n")) {
-            final String decoration = decorateLineMarkdown(line.trim());
-            for (String lineSplit : line.split("(?<=\\G.{" + MAX_CHARS_PER_LINE + "})")) {
-                final String lineSplitFormatted = ChatColor.RESET + formatLine(lineSplit.trim(), decoration);
-
-                final boolean shouldSplit = lines + 1 >= MAX_LINES_PER_PAGE
-                        || currentPageLength + lineSplit.length() > MAX_CHARS_PER_PAGE;
-
-                if (shouldSplit && result.size() >= MAX_PAGES)
-                    throw new UnsupportedOperationException("Markdown text is too large; " +
-                            "Page reached 50 pages, cannot add another line");
-
-                if (shouldSplit) {
-                    result.add(currentPage.toString().trim());
-                    currentPage = new StringBuilder(lineSplitFormatted + "\n");
-                    currentPageLength = lineSplit.length();
-                    lines = 0;
-                    continue;
-                }
-                currentPage.append(lineSplitFormatted).append("\n");
-                currentPageLength += lineSplit.length();
-                lines++;
-            }
-        }
-        if (!currentPage.isEmpty()) result.add(currentPage.toString());
-        return result.toArray(new String[0]);
+    public static String @NotNull [] renderMarkdownToBookContent(@NotNull final String markdownText) {
+        return BookTextWrapper.wrapTextForBook(renderMarkdown(markdownText));
     }
 
     @NotNull
     public static ItemStack renderMarkdownToBook(@NotNull final String markdownText) {
         final ItemStack book = new ItemStack(Material.WRITTEN_BOOK);
         final BookMeta meta = (BookMeta) book.getItemMeta();
-        meta.addPage(renderMarkDownToBookContent(markdownText));
+        meta.addPage(renderMarkdownToBookContent(markdownText));
         book.setItemMeta(meta);
         return book;
     }
