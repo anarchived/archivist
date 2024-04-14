@@ -6,10 +6,7 @@ import org.bukkit.Material;
 import org.bukkit.Nameable;
 import org.bukkit.block.Block;
 import org.bukkit.block.Container;
-import org.bukkit.entity.Arrow;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockRedstoneEvent;
@@ -34,7 +31,9 @@ public class FrozenWorldListener implements Listener {
     }
 
     @EventHandler
-    public void entityInteractEvent(@NotNull final PlayerInteractAtEntityEvent ev) {
+    public void entityInteractEvent(@NotNull final PlayerInteractEntityEvent ev) {
+        if (ev.getRightClicked() instanceof final ItemFrame itemFrame)
+            ev.getPlayer().getInventory().addItem(itemFrame.getItem().clone());
         ev.setCancelled(true);
     }
 
