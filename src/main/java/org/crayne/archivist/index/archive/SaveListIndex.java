@@ -3,7 +3,6 @@ package org.crayne.archivist.index.archive;
 import org.crayne.archivist.index.blob.Blob;
 import org.crayne.archivist.index.blob.save.SaveIdentifier;
 import org.crayne.archivist.index.file.section.Section;
-import org.crayne.archivist.index.file.section.SectionType;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Path;
@@ -24,9 +23,7 @@ public class SaveListIndex extends ArchiveIndex {
     }
 
     @NotNull
-    private static final Map<String, Section> SECTIONS = Map.of(
-            "Archived Saves", SectionType.ENUMERATION.createSection()
-    );
+    private static final Map<String, Section> SECTIONS = Map.of();
 
     @NotNull
     public Map<String, Section> requiredSections() {
