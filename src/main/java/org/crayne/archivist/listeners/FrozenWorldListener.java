@@ -1,9 +1,9 @@
 package org.crayne.archivist.listeners;
 
 import com.destroystokyo.paper.event.entity.EntityPathfindEvent;
+import com.destroystokyo.paper.event.player.PlayerElytraBoostEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.Nameable;
 import org.bukkit.block.Block;
 import org.bukkit.block.Container;
 import org.bukkit.entity.*;
@@ -11,7 +11,11 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.entity.*;
-import org.bukkit.event.player.*;
+import org.bukkit.event.hanging.HangingBreakEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
@@ -31,6 +35,11 @@ public class FrozenWorldListener implements Listener {
     }
 
     @EventHandler
+    public void hangingBreakEvent(@NotNull final HangingBreakEvent ev) {
+        ev.setCancelled(true);
+    }
+
+    @EventHandler
     public void entityInteractEvent(@NotNull final PlayerInteractEntityEvent ev) {
         if (ev.getRightClicked() instanceof final ItemFrame itemFrame)
             ev.getPlayer().getInventory().addItem(itemFrame.getItem().clone());
@@ -38,9 +47,9 @@ public class FrozenWorldListener implements Listener {
     }
 
     @EventHandler
-    public void entityShootBow(EntityShootBowEvent event) {
+    public void entityShootBow(@NotNull final EntityShootBowEvent event) {
         if (event.getProjectile() instanceof Arrow && event.getEntity() instanceof Player)
-            event.setConsumeArrow(false);
+            event.setConsumeItem(false);
     }
 
     @EventHandler
@@ -53,35 +62,47 @@ public class FrozenWorldListener implements Listener {
             cancelDepletion(ev);
             return;
         }
-        ev.setCancelled(true);
-        if (block.getType() == Material.ENDER_CHEST) return;
-
-        if (!(block.getState() instanceof final Container container)
-                || !(block.getState() instanceof final Nameable nameable))
+        if (block.getType() == Material.ENDER_CHEST) {
+            ev.setCancelled(true);
             return;
+        }
+        if (!(block.getState() instanceof final Container container)) {
+            cancelDepletion(ev);
+            return;
+        }
+
+        ev.setCancelled(true);
 
         final Inventory inventory = container.getInventory();
-        new ContainerViewGUI(ev.getPlayer(), inventory, nameable.getCustomName()).open();
+        new ContainerViewGUI(ev.getPlayer(), inventory, container.customName()).open();
     }
 
     private static void cancelDepletion(@NotNull final PlayerInteractEvent ev) {
         final Material material = ev.getMaterial();
-        final boolean depletes = switch (material) {
-            case ENDER_PEARL, FIREWORK -> true;
-            default -> false;
-        };
-        if (material == Material.EMPTY_MAP)
-            ev.setCancelled(true);
+        final boolean depletes = material == Material.ENDER_PEARL;
 
-        final ItemStack before = ev.getItem().clone();
-        final EquipmentSlot slot = ev.getHand();
-        final PlayerInventory inv = ev.getPlayer().getInventory();
+        if (material == Material.MAP)
+            ev.setCancelled(true);
 
         if (!depletes) return;
 
+        final ItemStack before = ev.getItem();
+        final EquipmentSlot slot = ev.getHand();
+
+        if (before == null || slot == null)
+            return;
+
+        final ItemStack beforeFinal = before.clone();
+        final PlayerInventory inv = ev.getPlayer().getInventory();
+
         Bukkit.getScheduler().runTaskLater(ArchivistPlugin.instance(),
-                () -> inv.setItem(slot, before),
+                () -> inv.setItem(slot, beforeFinal),
                 1L);
+    }
+
+    @EventHandler
+    public void elytraBoostEvent(@NotNull final PlayerElytraBoostEvent ev) {
+        ev.setShouldConsume(false);
     }
 
     @EventHandler
@@ -118,11 +139,6 @@ public class FrozenWorldListener implements Listener {
 
     @EventHandler
     public void entityTargetEvent(@NotNull final EntityTargetEvent ev) {
-        ev.setCancelled(true);
-    }
-
-    @EventHandler
-    public void spawnEvent(@NotNull final EntitySpawnEvent ev) {
         ev.setCancelled(true);
     }
 

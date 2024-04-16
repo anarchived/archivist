@@ -2,14 +2,15 @@ package org.crayne.archivist.gui;
 
 import mc.obliviate.inventory.Icon;
 import mc.obliviate.inventory.pagination.PaginationManager;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
-import org.crayne.archivist.gui.markdown.MarkdownBookRenderer;
+import org.crayne.archivist.text.markdown.MarkdownBookRenderer;
 import org.crayne.archivist.gui.util.LoreUtil;
 import org.crayne.archivist.index.cached.CachedSave;
 import org.crayne.archivist.index.cached.CachedServer;
+import org.crayne.archivist.inventory.ArchivistInventory;
+import org.crayne.archivist.text.Text;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,10 +28,9 @@ public class SaveListGUI extends PagedGUI {
 
     public SaveListGUI(@Nullable final ServerListGUI previous, @NotNull final Player p,
                        @NotNull final CachedServer server, @NotNull final String query) {
-        super(previous, p, "save-list",
-                "" + ChatColor.BLUE + ChatColor.BOLD + "Bases of "
-                        + server.name()
-                        + (query.isEmpty() ? "" : " : Searching")
+        super(previous, p, "save-list", "§1§lBases of "
+                + server.name()
+                + (query.isEmpty() ? "" : " : Searching")
         );
         this.server = server;
         this.query = sanitizeQuery(query);
@@ -51,10 +51,10 @@ public class SaveListGUI extends PagedGUI {
 
     @NotNull
     private static final List<String> LORE_DEFAULT = List.of(
-            ChatColor.YELLOW + "Left click to see archived dates",
-            ChatColor.YELLOW + "Right click to see more information",
+            ArchivistInventory.mainText("Left click to see archived dates").legacyText(),
+            ArchivistInventory.mainText("Right click to see more information").legacyText(),
             "",
-            ChatColor.GOLD + "Archived dates:"
+            ArchivistInventory.mainText("Archived dates:").legacyText()
     );
 
     public void update(@NotNull final PaginationManager pagination) {
@@ -69,8 +69,10 @@ public class SaveListGUI extends PagedGUI {
                     .map(Map.Entry::getKey)
                     .toList());
 
+            final Text title = ArchivistInventory.mainText(save.name());
+
             pagination.addItem(new Icon(Material.BOOK)
-                    .setName(ChatColor.GOLD + save.name())
+                    .setName(title.legacyText())
                     .setLore(lore)
                     .onClick(e -> {
                         if (e.getClick() == ClickType.RIGHT || e.getClick() == ClickType.SHIFT_RIGHT) {

@@ -1,6 +1,5 @@
 package org.crayne.archivist.inventory;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -17,6 +16,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.crayne.archivist.text.Text;
+import org.crayne.archivist.text.formatting.coloring.Coloring;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,10 +26,20 @@ import java.util.List;
 public class ArchivistInventory implements Listener {
 
     @NotNull
+    public static Text mainText(@NotNull final String text) {
+        return Text.text(text).colored(Coloring.rgb(255, 180, 0));
+    }
+
+    @NotNull
+    public static Text secondaryText(@NotNull final String text) {
+        return Text.text(text).colored(Coloring.rgb(180, 180, 180));
+    }
+
+    @NotNull
     private static final ItemStack BROWSER_ITEMSTACK = new ItemStack(Material.COMPASS) {{
         final ItemMeta meta = getItemMeta();
-        meta.setDisplayName(ChatColor.GOLD + "Browser");
-        meta.setLore(List.of(ChatColor.GRAY + "Right click to browse the archive"));
+        meta.displayName(mainText("Browser").component());
+        meta.lore(List.of(secondaryText("Right click to browse the archive").component()));
         meta.addEnchant(Enchantment.MENDING, 1, false);
         meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         setItemMeta(meta);
@@ -37,14 +48,14 @@ public class ArchivistInventory implements Listener {
     @NotNull
     private static final ItemStack ENDER_PEARL_ITEMSTACK = new ItemStack(Material.ENDER_PEARL) {{
         final ItemMeta meta = getItemMeta();
-        meta.setDisplayName(ChatColor.GOLD + "Ender Pearl");
+        meta.displayName(mainText("Ender Pearl").component());
         setItemMeta(meta);
     }};
 
     @NotNull
-    private static final ItemStack FIREWORKS_ITEMSTACK = new ItemStack(Material.FIREWORK) {{
+    private static final ItemStack FIREWORKS_ITEMSTACK = new ItemStack(Material.FIREWORK_ROCKET) {{
         final FireworkMeta meta = (FireworkMeta) getItemMeta();
-        meta.setDisplayName(ChatColor.GOLD + "Fireworks");
+        meta.displayName(mainText("Fireworks").component());
         meta.setPower(5);
         setItemMeta(meta);
     }};
@@ -52,7 +63,7 @@ public class ArchivistInventory implements Listener {
     @NotNull
     private static final ItemStack NIGHT_VISION_ITEMSTACK = new ItemStack(Material.POTION) {{
         final PotionMeta meta = (PotionMeta) getItemMeta();
-        meta.setDisplayName(ChatColor.GOLD + "Night Vision");
+        meta.displayName(mainText("Night Vision").component());
         meta.addCustomEffect(new PotionEffect(
                 PotionEffectType.NIGHT_VISION,
                 20 * 60 * 15,
@@ -68,7 +79,7 @@ public class ArchivistInventory implements Listener {
     @NotNull
     private static final ItemStack MILK_BUCKET_ITEMSTACK = new ItemStack(Material.MILK_BUCKET) {{
         final ItemMeta meta = getItemMeta();
-        meta.setDisplayName(ChatColor.GOLD + "Milk Bucket");
+        meta.displayName(mainText("Milk Bucket").component());
 
         setItemMeta(meta);
     }};
@@ -76,7 +87,7 @@ public class ArchivistInventory implements Listener {
     @NotNull
     private static final ItemStack ELYTRA_ITEMSTACK = new ItemStack(Material.ELYTRA) {{
         final ItemMeta meta = getItemMeta();
-        meta.setDisplayName(ChatColor.GOLD + "Elytra");
+        meta.displayName(mainText("Elytra").component());
         meta.setUnbreakable(true);
         meta.addEnchant(Enchantment.MENDING, 1, false);
         meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);

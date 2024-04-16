@@ -3,11 +3,12 @@ package org.crayne.archivist.gui;
 import mc.obliviate.inventory.Gui;
 import mc.obliviate.inventory.Icon;
 import mc.obliviate.inventory.pagination.PaginationManager;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.crayne.archivist.inventory.ArchivistInventory;
+import org.crayne.archivist.text.Text;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -34,16 +35,22 @@ public abstract class PagedGUI extends Gui {
         this(null, p, id, title);
     }
 
+    @NotNull
+    private static final Text
+            CHANGE_PAGE_TEXT = ArchivistInventory.mainText("Change Page"),
+            NEXT_PAGE_TEXT = ArchivistInventory.mainText("Left click for next page"),
+            PREVIOUS_PAGE_TEXT = ArchivistInventory.mainText("Right click for previous page"),
+            BACK_TEXT = ArchivistInventory.mainText("Go back");
+
     public void onOpen(@NotNull final InventoryOpenEvent ev) {
         updateDisplayItems();
         final Icon pageIcon = new Icon(Material.ARROW)
-                .setName(ChatColor.GOLD + "Change Page")
-                .setLore(ChatColor.YELLOW + "Left click for next page",
-                         ChatColor.YELLOW + "Right click for previous page"
-                );
+                .setName(CHANGE_PAGE_TEXT.legacyText())
+                .setLore(NEXT_PAGE_TEXT.legacyText(),
+                         PREVIOUS_PAGE_TEXT.legacyText());
 
         final Icon previousWindowIcon = new Icon(Material.SPECTRAL_ARROW)
-                .setName(ChatColor.GOLD + "Previous window");
+                .setName(BACK_TEXT.legacyText());
 
         addItem(PAGE_SELECTOR, pageIcon.onClick(e -> {
             if (updatePage(e))

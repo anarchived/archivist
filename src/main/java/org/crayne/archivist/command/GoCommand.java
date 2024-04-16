@@ -1,6 +1,5 @@
 package org.crayne.archivist.command;
 
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -16,12 +15,14 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static org.crayne.archivist.command.CommandUtil.errorMessage;
+
 public class GoCommand implements CommandExecutor {
 
     public boolean onCommand(@NotNull final CommandSender sender, @NotNull final Command command,
                              @NotNull final String label, @NotNull final String @NotNull [] args) {
         if (!(sender instanceof final Player p)) {
-            sender.sendMessage(ChatColor.RED + "This command can only be used ingame.");
+            sender.sendMessage(errorMessage("This command can only be used ingame."));
             return false;
         }
         if (args.length == 0) {
@@ -44,7 +45,7 @@ public class GoCommand implements CommandExecutor {
         final String serverName = args[0];
         final CachedServer server = serverIndex.cachedServers().get(serverName);
         if (server == null) {
-            p.sendMessage(ChatColor.RED + "Could not find the server '" + serverName + "'");
+            p.sendMessage(errorMessage("Could not find the server '" + serverName + "'"));
             return Optional.empty();
         }
         return Optional.of(server);

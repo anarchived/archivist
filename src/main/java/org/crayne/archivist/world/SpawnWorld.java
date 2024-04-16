@@ -1,14 +1,15 @@
 package org.crayne.archivist.world;
 
 import org.bukkit.*;
-import org.bukkit.block.Biome;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.generator.ChunkGenerator;
+import org.bukkit.generator.WorldInfo;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
 import java.util.Random;
 
 public class SpawnWorld implements Listener {
@@ -46,11 +47,11 @@ public class SpawnWorld implements Listener {
 
     @NotNull
     public static final ChunkGenerator EMPTY_GENERATOR = new ChunkGenerator() {
-        @NotNull
-        public ChunkData generateChunkData(@NotNull final World world, @NotNull final Random random,
-                                           final int chunkX, final int chunkZ, @NotNull final BiomeGrid biome) {
-            final ChunkData data = createChunkData(world);
 
+        public void generateSurface(@NotNull final WorldInfo worldInfo,
+                                    @NotNull final Random random,
+                                    final int chunkX, final int chunkZ,
+                                    @NotNull final ChunkData data) {
             for (int y = 0; y < data.getMaxHeight(); y++) {
                 for (int x = 0; x < 16; x++) {
                     for (int z = 0; z < 16; z++) {
@@ -59,18 +60,15 @@ public class SpawnWorld implements Listener {
                             continue;
                         }
                         data.setBlock(x, y, z, Material.AIR);
-                        biome.setBiome(x, z, Biome.PLAINS);
                     }
                 }
             }
-            return data;
         }
     };
 
-    @SuppressWarnings("UnusedReturnValue")
     @NotNull
     public static World registerSpawnWorld() {
-        return Bukkit.createWorld(new WorldCreator("spawn").generator(EMPTY_GENERATOR));
+        return Objects.requireNonNull(Bukkit.createWorld(new WorldCreator("spawn").generator(EMPTY_GENERATOR)));
     }
 
 }

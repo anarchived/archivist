@@ -2,16 +2,17 @@ package org.crayne.archivist.gui;
 
 import mc.obliviate.inventory.Icon;
 import mc.obliviate.inventory.pagination.PaginationManager;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.crayne.archivist.ArchivistPlugin;
-import org.crayne.archivist.gui.markdown.MarkdownBookRenderer;
+import org.crayne.archivist.text.markdown.MarkdownBookRenderer;
 import org.crayne.archivist.gui.util.LoreUtil;
 import org.crayne.archivist.index.cached.CachedServer;
 import org.crayne.archivist.index.cached.CachedServerIndex;
 import org.crayne.archivist.index.cached.MapUtil;
+import org.crayne.archivist.inventory.ArchivistInventory;
+import org.crayne.archivist.text.Text;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -23,16 +24,16 @@ public class ServerListGUI extends PagedGUI {
     private final CachedServerIndex serverIndex;
 
     public ServerListGUI(@NotNull final Player p) {
-        super(p, "server-list", "" + ChatColor.BLUE + ChatColor.BOLD + "Server List");
+        super(p, "server-list", "§1§lServer List");
         serverIndex = ArchivistPlugin.instance().serverIndex();
     }
 
     @NotNull
     private static final List<String> LORE_DEFAULT = List.of(
-            ChatColor.YELLOW + "Left click to see archived bases",
-            ChatColor.YELLOW + "Right click to see more information",
+            ArchivistInventory.mainText("Left click to see archived bases").legacyText(),
+            ArchivistInventory.mainText("Right click to see more information").legacyText(),
             "",
-            ChatColor.GOLD + "Archived bases:"
+            ArchivistInventory.mainText("Archived bases:").legacyText()
     );
 
     public void update(@NotNull final PaginationManager pagination) {
@@ -40,8 +41,10 @@ public class ServerListGUI extends PagedGUI {
             final List<String> lore = new ArrayList<>(LORE_DEFAULT);
             LoreUtil.addRemainingLines(lore, MapUtil.sortMapByKey(server.saves()).keySet().stream().toList());
 
+            final Text title = ArchivistInventory.mainText(server.name());
+
             pagination.addItem(new Icon(Material.BOOK)
-                    .setName(ChatColor.GOLD + server.name())
+                    .setName(title.legacyText())
                     .setLore(lore)
                     .onClick(e -> {
                         if (e.getClick() == ClickType.RIGHT || e.getClick() == ClickType.SHIFT_RIGHT) {

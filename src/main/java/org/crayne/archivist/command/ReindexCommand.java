@@ -1,5 +1,6 @@
 package org.crayne.archivist.command;
 
+import net.kyori.adventure.text.Component;
 import org.apache.commons.io.FileUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
@@ -21,10 +22,10 @@ public class ReindexCommand implements CommandExecutor {
                              @NotNull final String label, @NotNull final String @NotNull [] args) {
         if (!sender.isOp()) return false;
 
-        Bukkit.getOnlinePlayers().forEach(p -> p.kickPlayer(
+        Bukkit.getOnlinePlayers().forEach(p -> p.kick(Component.text(
                 "The server has entered maintenance mode.\n" +
                         "Please be patient; it will be back soon."
-        ));
+        )));
         Bukkit.getWorlds().forEach(w -> Arrays.stream(w.getLoadedChunks()).forEach(Chunk::unload));
         final CachedServerIndex cachedServerIndex = ArchivistPlugin.instance().serverIndex();
         final Set<String> blobWorldFiles = cachedServerIndex.collectBlobs().keySet();
