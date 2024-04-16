@@ -2,6 +2,7 @@ package org.crayne.archivist;
 
 import mc.obliviate.inventory.InventoryAPI;
 import org.apache.logging.log4j.LogManager;
+import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.crayne.archivist.command.GoCommand;
@@ -16,6 +17,7 @@ import org.crayne.archivist.world.SpawnWorld;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.logging.Level;
 
 public class ArchivistPlugin extends JavaPlugin {
@@ -36,15 +38,24 @@ public class ArchivistPlugin extends JavaPlugin {
                 .orElseThrow(() -> new IndexingException("Cannot load empty archive"));
 
         new InventoryAPI(this).init();
-        getCommand("goto").setExecutor(new GoToCommand());
-        getCommand("go").setExecutor(new GoCommand());
-        getCommand("reindex").setExecutor(new ReindexCommand());
+        Objects.requireNonNull(getCommand("goto"))
+                .setExecutor(new GoToCommand());
+
+        Objects.requireNonNull(getCommand("go"))
+                .setExecutor(new GoCommand());
+
+        Objects.requireNonNull(getCommand("reindex"))
+                .setExecutor(new ReindexCommand());
 
         ((org.apache.logging.log4j.core.Logger) LogManager.getRootLogger()).addFilter(new LogSpamFilter());
     }
 
     public void onDisable() {
+        unloadAllBlobs();
+    }
 
+    public void unloadAllBlobs() {
+        serverIndex.collectBlobs().keySet().forEach(world -> Bukkit.unloadWorld(world, false));
     }
 
     @NotNull

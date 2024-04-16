@@ -26,6 +26,7 @@ public record BlobLevel(int blobIndex, @NotNull World world, @NotNull String ser
                 .generator(SpawnWorld.EMPTY_GENERATOR)
                 .environment(environment)
         );
+        assert world != null;
         world.setAutoSave(false);
         return world;
     }
