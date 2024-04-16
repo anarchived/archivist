@@ -22,7 +22,9 @@ public class LogSpamFilter implements Filter {
             "Ignoring unknown attribute 'forge.swimSpeed'",
             "Unable to find spawn biome",
             "moved too quickly!",
-            "Ignoring plugin channel in incoming REGISTER"
+            "Ignoring plugin channel in incoming REGISTER",
+            "Entity uuid already exists",
+            "Unable to load item from"
     );
 
     public Result filter(@NotNull final LogEvent event) {
