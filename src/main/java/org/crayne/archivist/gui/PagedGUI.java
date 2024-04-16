@@ -8,7 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.crayne.archivist.inventory.ArchivistInventory;
-import org.crayne.archivist.text.Text;
+import org.crayne.archivist.text.ChatText;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -36,7 +36,7 @@ public abstract class PagedGUI extends Gui {
     }
 
     @NotNull
-    private static final Text
+    private static final ChatText
             CHANGE_PAGE_TEXT = ArchivistInventory.mainText("Change Page"),
             NEXT_PAGE_TEXT = ArchivistInventory.mainText("Left click for next page"),
             PREVIOUS_PAGE_TEXT = ArchivistInventory.mainText("Right click for previous page"),

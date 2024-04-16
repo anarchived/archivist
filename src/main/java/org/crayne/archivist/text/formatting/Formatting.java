@@ -69,6 +69,10 @@ public final class Formatting {
         );
     }
 
+    public boolean empty() {
+        return coloring == null && styling().empty();
+    }
+
     @NotNull
     public static Formatting none() {
         return none(false);

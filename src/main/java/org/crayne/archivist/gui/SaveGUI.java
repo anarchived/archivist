@@ -8,7 +8,7 @@ import org.bukkit.entity.Player;
 import org.crayne.archivist.index.cached.CachedSave;
 import org.crayne.archivist.index.cached.CachedSaveData;
 import org.crayne.archivist.inventory.ArchivistInventory;
-import org.crayne.archivist.text.Text;
+import org.crayne.archivist.text.ChatText;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
@@ -27,8 +27,8 @@ public class SaveGUI extends PagedGUI {
         final CachedSaveData data = save.data();
 
         for (final Map.Entry<String, World> variant : data.variantWorldsSorted()) {
-            final Text title = ArchivistInventory.mainText(variant.getKey());
-            final Text teleportMessage = ArchivistInventory.mainText("Teleported you to ")
+            final ChatText title = ArchivistInventory.mainText(variant.getKey());
+            final ChatText teleportMessage = ArchivistInventory.mainText("Teleported you to ")
                     .append(ArchivistInventory.secondaryText(save.name() + "-" + variant.getKey()));
 
             pagination.addItem(new Icon(Material.BOOK)

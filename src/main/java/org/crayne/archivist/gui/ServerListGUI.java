@@ -6,13 +6,13 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.crayne.archivist.ArchivistPlugin;
+import org.crayne.archivist.text.ChatText;
 import org.crayne.archivist.text.markdown.MarkdownBookRenderer;
 import org.crayne.archivist.gui.util.LoreUtil;
 import org.crayne.archivist.index.cached.CachedServer;
 import org.crayne.archivist.index.cached.CachedServerIndex;
 import org.crayne.archivist.index.cached.MapUtil;
 import org.crayne.archivist.inventory.ArchivistInventory;
-import org.crayne.archivist.text.Text;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -41,7 +41,7 @@ public class ServerListGUI extends PagedGUI {
             final List<String> lore = new ArrayList<>(LORE_DEFAULT);
             LoreUtil.addRemainingLines(lore, MapUtil.sortMapByKey(server.saves()).keySet().stream().toList());
 
-            final Text title = ArchivistInventory.mainText(server.name());
+            final ChatText title = ArchivistInventory.mainText(server.name());
 
             pagination.addItem(new Icon(Material.BOOK)
                     .setName(title.legacyText())

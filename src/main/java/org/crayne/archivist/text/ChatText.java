@@ -20,7 +20,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class Text {
+public class ChatText {
 
     public static final char SECTION = '§', AMPERSAND = '&';
 
@@ -28,6 +28,16 @@ public class Text {
                        @NotNull Formatting formatting,
                        @Nullable ClickEvent clickEvent,
                        @Nullable HoverEvent<?> hoverEvent) {
+
+        @NotNull
+        public static Part part(@NotNull final String text) {
+            return part(text, Formatting.none());
+        }
+
+        @NotNull
+        public static Part part(@NotNull final String text, @NotNull final Formatting formatting) {
+            return new Part(text, formatting, null, null);
+        }
 
         public boolean equalDisplay(@NotNull final Part other) {
             return formatting.equals(other.formatting)
@@ -37,16 +47,17 @@ public class Text {
 
         @NotNull
         public TextComponent component() {
-            final TextComponent plain = Component.text(text)
-                    .clickEvent(clickEvent)
-                    .hoverEvent(hoverEvent);
-
             if (formatting.styling().reset())
-                return plain;
+                return Component.text(text)
+                        .clickEvent(clickEvent)
+                        .hoverEvent(hoverEvent);
 
             final TextColor textColor = formatting.adventureTextColor();
             final TextDecoration[] textDecorations = formatting.adventureTextDecorations();
-            return plain.style(Style.style(textColor, textDecorations));
+            return Component.text(text)
+                    .style(Style.style(textColor, textDecorations))
+                    .clickEvent(clickEvent)
+                    .hoverEvent(hoverEvent);
         }
 
         @NotNull
@@ -89,57 +100,58 @@ public class Text {
     @NotNull
     private final List<Part> parts;
 
-    private Text(@NotNull final Collection<Part> parts) {
+    private ChatText(@NotNull final Collection<Part> parts) {
         this.parts = List.copyOf(parts);
     }
 
     @NotNull
-    public static Text empty() {
-        return Text.text();
+    public static ChatText empty() {
+        return ChatText.text();
     }
 
     @NotNull
-    public static Text text(@NotNull final Collection<Part> parts) {
-        return new Text(parts);
+    public static ChatText text(@NotNull final Collection<Part> parts) {
+        return new ChatText(parts);
     }
 
     @NotNull
-    public static Text text(@NotNull final Part @NotNull ... parts) {
-        return Text.text(Arrays.stream(parts).toList());
+    public static ChatText text(@NotNull final Part @NotNull ... parts) {
+        return ChatText.text(Arrays.stream(parts).toList());
     }
 
     @NotNull
-    public static Text text(@NotNull final String coloredText) {
+    public static ChatText text(@NotNull final String coloredText) {
         return text(coloredText, SECTION, null, null);
     }
 
     @NotNull
-    public static Text clickableText(@NotNull final String coloredText, @Nullable final ClickEvent clickEvent) {
+    public static ChatText clickableText(@NotNull final String coloredText, @Nullable final ClickEvent clickEvent) {
         return text(coloredText, SECTION, clickEvent, null);
     }
 
     @NotNull
-    public static Text hoverableText(@NotNull final String coloredText, @Nullable final HoverEvent<?> hoverEvent) {
+    public static ChatText hoverableText(@NotNull final String coloredText, @Nullable final HoverEvent<?> hoverEvent) {
         return text(coloredText, SECTION, null, hoverEvent);
     }
 
     @NotNull
-    public static Text clickableHoverableText(@NotNull final String coloredText,
-                                              @Nullable final ClickEvent clickEvent,
-                                              @Nullable final HoverEvent<?> hoverEvent) {
+    public static ChatText clickableHoverableText(@NotNull final String coloredText,
+                                                  @Nullable final ClickEvent clickEvent,
+                                                  @Nullable final HoverEvent<?> hoverEvent) {
         return text(coloredText, SECTION, clickEvent, hoverEvent);
     }
 
     @NotNull
     public static TextComponent legacy(@NotNull final String s) {
-        return Text.text(s).component();
+        return ChatText.text(s).component();
     }
 
     @NotNull
     public TextComponent component() {
         TextComponent result = Component.text("");
         for (final Part part : parts) {
-            result = result.append(part.component());
+            final Component component = part.component();
+            result = result.append(component);
         }
         return result;
     }
@@ -160,32 +172,44 @@ public class Text {
     }
 
     @NotNull
-    public Text apply(@NotNull final Function<Part, Part> partFunction) {
-        return new Text(parts.stream().map(partFunction).toList());
+    public ChatText apply(@NotNull final Function<Part, Part> partFunction) {
+        return new ChatText(parts.stream().map(partFunction).toList());
     }
 
     @NotNull
-    public Text hoverable(@NotNull final HoverEvent<?> hoverEvent) {
+    public ChatText prependFormatting(@NotNull final Formatting formatting) {
+        final List<Part> propagate = new ArrayList<>();
+        propagate.add(Part.part("", formatting));
+
+        for (final Part nextPart : parts) {
+            if (mergeWithPreviousPart(propagate, nextPart))
+                propagate.add(nextPart);
+        }
+        return ChatText.text(propagate);
+    }
+
+    @NotNull
+    public ChatText hoverable(@NotNull final HoverEvent<?> hoverEvent) {
         return apply(p -> p.hoverable(hoverEvent));
     }
 
     @NotNull
-    public Text clickable(@NotNull final ClickEvent clickEvent) {
+    public ChatText clickable(@NotNull final ClickEvent clickEvent) {
         return apply(p -> p.clickable(clickEvent));
     }
 
     @NotNull
-    public Text colored(@NotNull final Coloring coloring) {
+    public ChatText colored(@NotNull final Coloring coloring) {
         return apply(p -> p.colored(coloring));
     }
 
     @NotNull
-    public Text styled(@NotNull final Styling styling) {
+    public ChatText styled(@NotNull final Styling styling) {
         return apply(p -> p.styled(styling));
     }
 
     @NotNull
-    public Text formatted(@NotNull final Formatting formatting) {
+    public ChatText formatted(@NotNull final Formatting formatting) {
         return apply(p -> p.formatted(formatting));
     }
 
@@ -201,12 +225,12 @@ public class Text {
     }
 
     @NotNull
-    public TextCharIterator charIterator() {
-        return new TextCharIterator(this);
+    public ChatTextCharIterator charIterator() {
+        return new ChatTextCharIterator(this);
     }
 
     @NotNull
-    public Text charAt(final int index) {
+    public ChatText charAt(final int index) {
         int i = 0;
         for (final Part part : parts) {
             final String partText = part.text;
@@ -218,7 +242,7 @@ public class Text {
             }
             final String character = String.valueOf(partText.charAt(index - i));
             final Part characterPart = new Part(character, part.formatting, part.clickEvent, part.hoverEvent);
-            return new Text(Collections.singleton(characterPart));
+            return new ChatText(Collections.singleton(characterPart));
         }
         throw new IndexOutOfBoundsException("Index " + index + " is out of bounds for length " + i);
     }
@@ -244,7 +268,7 @@ public class Text {
     }
 
     @NotNull
-    public Text trimFirst() {
+    public ChatText trimFirst() {
         final int length = length();
         if (length == 0) return empty();
 
@@ -255,14 +279,14 @@ public class Text {
     }
 
     @NotNull
-    public Text trim() {
+    public ChatText trim() {
         final int length = length();
         if (length == 0) return empty();
 
         int i = 0;
         while (i < length && Character.isWhitespace(charAt(i).singleChar())) i++;
 
-        final Text firstSubstring = substring(i);
+        final ChatText firstSubstring = substring(i);
 
         int j = length - i - 1;
         while (j >= 0 && Character.isWhitespace(firstSubstring.charAt(j).singleChar())) j--;
@@ -271,12 +295,12 @@ public class Text {
     }
 
     @NotNull
-    public Text substring(final int beginIndex, final int endIndex) {
+    public ChatText substring(final int beginIndex, final int endIndex) {
         final int length = length();
         if (beginIndex < 0 || beginIndex > length || endIndex > length)
             throw new StringIndexOutOfBoundsException("begin " + beginIndex + ", end " + endIndex + ", length " + length);
 
-        Text result = empty();
+        ChatText result = empty();
         for (int i = beginIndex; i < endIndex; i++) {
             result = result.append(charAt(i));
         }
@@ -284,7 +308,7 @@ public class Text {
     }
 
     @NotNull
-    public Text substring(final int beginIndex) {
+    public ChatText substring(final int beginIndex) {
         return substring(beginIndex, length());
     }
 
@@ -297,15 +321,21 @@ public class Text {
     }
 
     public boolean hasContent() {
-        return !(parts.isEmpty() || (parts.size() == 1 && parts.get(0).text.isEmpty()));
+        for (final Part part : parts) {
+            final String text = part.text;
+            final Formatting formatting = part.formatting;
+
+            if (!text.isEmpty() || !formatting.empty()) return true;
+        }
+        return false;
     }
 
     @NotNull
-    public List<Text> splitChunks(final int chunkLength) {
+    public List<ChatText> splitChunks(final int chunkLength) {
         if (chunkLength <= 0) return Collections.emptyList();
 
-        final List<Text> result = new ArrayList<>();
-        Text currentChunk = empty();
+        final List<ChatText> result = new ArrayList<>();
+        ChatText currentChunk = empty();
 
         final int length = length();
         for (int i = 0; i < length; i++) {
@@ -329,13 +359,13 @@ public class Text {
     }
 
     @NotNull
-    public List<Text> splitByDelimiter(final char delimiter) {
-        final List<Text> result = new ArrayList<>();
-        Text currentChunk = empty();
+    public List<ChatText> splitByDelimiter(final char delimiter) {
+        final List<ChatText> result = new ArrayList<>();
+        ChatText currentChunk = empty();
 
         final int length = length();
         for (int i = 0; i < length; i++) {
-            final Text c = charAt(i);
+            final ChatText c = charAt(i);
             final char ch = c.singleChar();
 
             if (ch == delimiter) {
@@ -379,26 +409,26 @@ public class Text {
     private static void verifyPageCount(final int count) {
         if (count > MAX_PAGES)
             throw new IllegalArgumentException("Could not wrap text for book; " +
-                    "Text exceeds max page amount of 50");
+                    "ChatText exceeds max page amount of 50");
     }
 
     @NotNull
-    public Text @NotNull [] wrapBookPages() {
-        final List<Text> pages = new ArrayList<>();
-        final List<Text> lines = wrapSingleBookPage();
+    public ChatText @NotNull [] wrapBookPages() {
+        final List<ChatText> pages = new ArrayList<>();
+        final List<ChatText> lines = wrapSingleBookPage();
 
-        Text currentPage = Text.empty();
+        ChatText currentPage = ChatText.empty();
         int currentLineCount = 0;
 
-        for (final Text lineRaw : lines) {
-            for (final Text line : lineRaw.splitChunks(MAX_CHARS_PER_PAGE)) {
+        for (final ChatText lineRaw : lines) {
+            for (final ChatText line : lineRaw.splitChunks(MAX_CHARS_PER_PAGE)) {
                 final boolean exceedsMaxChars = currentPage.length() + line.length() > MAX_CHARS_PER_PAGE;
                 final boolean exceedsMaxLines = currentLineCount + 1 > MAX_LINES_PER_PAGE;
 
                 if (exceedsMaxLines || exceedsMaxChars) {
                     verifyPageCount(pages.size());
                     pages.add(currentPage);
-                    currentPage = Text.empty();
+                    currentPage = ChatText.empty();
                     currentLineCount = 0;
                 }
                 final boolean pageHasNoContent = currentPage.isBlank();
@@ -407,11 +437,11 @@ public class Text {
                 if (pageHasNoContent && nextLineAddsNoContent)
                     continue;
 
-                currentPage = currentPage.append(line).append(Text.text("\n"));
+                currentPage = currentPage.append(line).append(ChatText.text("\n"));
                 currentLineCount++;
             }
             if (lineRaw.isEmpty()) {
-                currentPage = currentPage.append(Text.text("\n"));
+                currentPage = currentPage.append(ChatText.text("\n"));
                 currentLineCount++;
             }
         }
@@ -419,21 +449,21 @@ public class Text {
             verifyPageCount(pages.size());
             pages.add(currentPage);
         }
-        return pages.toArray(new Text[0]);
+        return pages.toArray(new ChatText[0]);
     }
 
     @NotNull
-    public List<Text> wrapSingleBookPage() {
+    public List<ChatText> wrapSingleBookPage() {
         return wrapTextByWidth(MAX_PIXELS_PER_LINE);
     }
 
     @NotNull
-    public List<Text> wrapTextByWidth(final int maxWidth) {
-        final List<Text> result = new ArrayList<>();
-        final TextCharIterator it = charIterator();
+    public List<ChatText> wrapTextByWidth(final int maxWidth) {
+        final List<ChatText> result = new ArrayList<>();
+        final ChatTextCharIterator it = charIterator();
 
         while (it.hasNext()) {
-            final Text c = it.peek();
+            final ChatText c = it.peek();
             final char ch = c.singleChar();
             if (ch == '\n') {
                 result.add(it.parsed().trim());
@@ -445,13 +475,13 @@ public class Text {
             final boolean shouldWrap = it.currentWidth() + charWidth + 1 >= maxWidth;
 
             if (shouldWrap) {
-                final Text wrapped = wrap(it, c);
+                final ChatText wrapped = wrap(it, c);
                 if (!wrapped.isEmpty()) result.add(wrapped);
             }
             if (it.hasNext())
                 it.next();
         }
-        final Text remaining = it.parsed().trim();
+        final ChatText remaining = it.parsed().trim();
         if (!remaining.isEmpty())
             result.add(remaining);
 
@@ -459,11 +489,11 @@ public class Text {
     }
 
     @NotNull
-    private static Text wrap(@NotNull final TextCharIterator it, final Text nextCharacter) {
-        Text resultLine = it.parsed();
+    private static ChatText wrap(@NotNull final ChatTextCharIterator it, final ChatText nextCharacter) {
+        ChatText resultLine = it.parsed();
 
         final int length = resultLine.length();
-        Text nextBegin = Text.empty();
+        ChatText nextBegin = ChatText.empty();
 
         final boolean splitsWordInHalf = length != 0
                 && !Character.isWhitespace(nextCharacter.singleChar())
@@ -471,7 +501,7 @@ public class Text {
 
         if (splitsWordInHalf) {
             for (int j = 1; j < length; j++) {
-                final Text backwardsCh = resultLine.charAt(length - j);
+                final ChatText backwardsCh = resultLine.charAt(length - j);
                 if (!Character.isWhitespace(backwardsCh.singleChar())) continue;
 
                 nextBegin  = resultLine.substring(length - j + 1, length);
@@ -488,8 +518,8 @@ public class Text {
     }
 
     @NotNull
-    public static Text text(@NotNull final String coloredText, final char colorCodeChar,
-                            @Nullable final ClickEvent clickEvent, @Nullable final HoverEvent<?> hoverEvent) {
+    public static ChatText text(@NotNull final String coloredText, final char colorCodeChar,
+                                @Nullable final ClickEvent clickEvent, @Nullable final HoverEvent<?> hoverEvent) {
         final List<Part> parts = new ArrayList<>();
 
         Formatting currentFormatting = Formatting.none();
@@ -511,30 +541,44 @@ public class Text {
             if (mergeWithPreviousPart(parts, nextPart))
                 parts.add(nextPart);
         }
-        return new Text(parts);
+        return new ChatText(parts);
     }
 
     @NotNull
-    public Text append(@NotNull final Text text) {
+    public ChatText append(@NotNull final ChatText text) {
         final List<Part> parts = new ArrayList<>(this.parts);
         for (final Part nextPart : text.parts) {
             if (mergeWithPreviousPart(parts, nextPart))
                 parts.add(nextPart);
         }
-        return new Text(parts);
+        return new ChatText(parts);
     }
 
     private static boolean mergeWithPreviousPart(@NotNull final List<Part> parts,
                                                  @NotNull final Part nextPart) {
         if (parts.isEmpty()) return true;
 
-        final Part previousPart = parts.get(parts.size() - 1);
+        final int lastIndex = parts.size() - 1;
+        final Part previousPart = parts.get(lastIndex);
         if (previousPart.equalDisplay(nextPart)) {
-            parts.remove(parts.size() - 1);
+            parts.remove(lastIndex);
             parts.add(new Part(previousPart.text + nextPart.text,
                     previousPart.formatting,
                     previousPart.clickEvent,
                     previousPart.hoverEvent));
+            return false;
+        }
+        // explicitly allow merging in situations like these:
+        // part 1: "§o§l"
+        // part 2: "Description"
+        // result: "§o§lDescription"
+        if (previousPart.text.isEmpty() && !previousPart.formatting.empty()
+                && !nextPart.text.isEmpty() && nextPart.formatting.empty()) {
+            parts.remove(lastIndex);
+            parts.add(new Part(nextPart.text,
+                    previousPart.formatting,
+                    nextPart.clickEvent,
+                    nextPart.hoverEvent));
             return false;
         }
         return true;

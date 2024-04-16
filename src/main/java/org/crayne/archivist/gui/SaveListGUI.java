@@ -10,7 +10,7 @@ import org.crayne.archivist.gui.util.LoreUtil;
 import org.crayne.archivist.index.cached.CachedSave;
 import org.crayne.archivist.index.cached.CachedServer;
 import org.crayne.archivist.inventory.ArchivistInventory;
-import org.crayne.archivist.text.Text;
+import org.crayne.archivist.text.ChatText;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -69,7 +69,7 @@ public class SaveListGUI extends PagedGUI {
                     .map(Map.Entry::getKey)
                     .toList());
 
-            final Text title = ArchivistInventory.mainText(save.name());
+            final ChatText title = ArchivistInventory.mainText(save.name());
 
             pagination.addItem(new Icon(Material.BOOK)
                     .setName(title.legacyText())

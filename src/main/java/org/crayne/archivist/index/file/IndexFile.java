@@ -88,7 +88,7 @@ public class IndexFile {
                 continue;
             }
             if (!line.isEmpty() && currentSection == null)
-                throwError("Unexpected text without section " + lineInfo);
+                continue;
 
             currentSectionText.append(line).append("\n");
         }

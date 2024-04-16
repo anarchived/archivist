@@ -16,7 +16,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.crayne.archivist.text.Text;
+import org.crayne.archivist.text.ChatText;
 import org.crayne.archivist.text.formatting.coloring.Coloring;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -26,13 +26,13 @@ import java.util.List;
 public class ArchivistInventory implements Listener {
 
     @NotNull
-    public static Text mainText(@NotNull final String text) {
-        return Text.text(text).colored(Coloring.rgb(255, 180, 0));
+    public static ChatText mainText(@NotNull final String text) {
+        return ChatText.text(text).colored(Coloring.rgb(255, 180, 0));
     }
 
     @NotNull
-    public static Text secondaryText(@NotNull final String text) {
-        return Text.text(text).colored(Coloring.rgb(180, 180, 180));
+    public static ChatText secondaryText(@NotNull final String text) {
+        return ChatText.text(text).colored(Coloring.rgb(180, 180, 180));
     }
 
     @NotNull

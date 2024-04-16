@@ -50,8 +50,10 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
     implementation("com.github.hamza-cskn.obliviate-invs:core:4.3.0")
     implementation("com.github.hamza-cskn.obliviate-invs:pagination:4.3.0")
+    implementation("com.atlassian.commonmark:commonmark:0.2.0")
     compileOnly("io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT")
     compileOnly("org.spigotmc:spigot-api:1.20.4-R0.1-SNAPSHOT")
     compileOnly("org.spigotmc:spigot:1.20.4-R0.1-SNAPSHOT")
     compileOnly("com.comphenix.protocol:ProtocolLib:5.0.0-SNAPSHOT")
+
 }

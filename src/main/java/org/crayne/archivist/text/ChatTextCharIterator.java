@@ -5,23 +5,23 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Iterator;
 
-public class TextCharIterator implements Iterator<Text> {
+public class ChatTextCharIterator implements Iterator<ChatText> {
 
     private int index;
     private final int length;
 
     @NotNull
-    private final Text iterating;
+    private final ChatText iterating;
 
     @NotNull
-    private Text parsed;
+    private ChatText parsed;
 
     @Nullable
-    private Text previous;
+    private ChatText previous;
 
-    public TextCharIterator(@NotNull final Text iterating) {
+    public ChatTextCharIterator(@NotNull final ChatText iterating) {
         this.iterating = iterating;
-        this.parsed = Text.empty();
+        this.parsed = ChatText.empty();
         this.length = iterating.length();
         this.index = 0;
     }
@@ -31,12 +31,12 @@ public class TextCharIterator implements Iterator<Text> {
     }
 
     @NotNull
-    public Text peek() {
+    public ChatText peek() {
         return iterating.charAt(index);
     }
 
     @NotNull
-    public Text parsed() {
+    public ChatText parsed() {
         return parsed;
     }
 
@@ -49,15 +49,15 @@ public class TextCharIterator implements Iterator<Text> {
     }
 
     public void clearParsed() {
-        clearParsed(Text.empty());
+        clearParsed(ChatText.empty());
     }
 
-    public void clearParsed(@NotNull final Text newText) {
+    public void clearParsed(@NotNull final ChatText newText) {
         parsed = newText;
     }
 
     @Nullable
-    public Text previous() {
+    public ChatText previous() {
         return previous;
     }
 
@@ -66,8 +66,8 @@ public class TextCharIterator implements Iterator<Text> {
     }
 
     @NotNull
-    public Text next() {
-        final Text next = peek();
+    public ChatText next() {
+        final ChatText next = peek();
         parsed = parsed.append(next);
         index++;
         return next;
