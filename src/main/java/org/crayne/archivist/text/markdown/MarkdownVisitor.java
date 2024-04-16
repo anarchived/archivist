@@ -34,15 +34,19 @@ public class MarkdownVisitor extends AbstractVisitor {
         result = result.append(next);
     }
 
+    public void lineBreak(final int amount) {
+        append(ChatText.text("\n".repeat(amount)));
+    }
+
     public void lineBreak() {
-        append(ChatText.text("\n"));
+        lineBreak(1);
     }
 
     public void visit(final Header header) {
         final Formatting headerFormatting = formatHeader(header.getLevel());
 
         if (!result.isBlank())
-            lineBreak();
+            lineBreak(2);
 
         append(ChatText.text(ChatText.Part.part("", headerFormatting)));
         visitChildren(header);
@@ -59,6 +63,18 @@ public class MarkdownVisitor extends AbstractVisitor {
 
     public void visit(final Text text) {
         append(ChatText.text(text.getLiteral()));
+    }
+
+    public void visit(final Emphasis emphasis) {
+        append(ChatText.text("§o"));
+        visitChildren(emphasis);
+        append(ChatText.text("§r"));
+    }
+
+    public void visit(final StrongEmphasis emphasis) {
+        append(ChatText.text("§l"));
+        visitChildren(emphasis);
+        append(ChatText.text("§r"));
     }
 
     @NotNull

@@ -148,12 +148,13 @@ public class ChatText {
 
     @NotNull
     public TextComponent component() {
-        TextComponent result = Component.text("");
-        for (final Part part : parts) {
-            final Component component = part.component();
-            result = result.append(component);
-        }
-        return result;
+        return Component.textOfChildren(parts.stream()
+                .map(Part::component)
+                // this is required for correct rendering in books because viabackwards bug i assume
+                // without this step, on 1.12.2 clients, the color simply is not reset for whatever reason
+                .map(c -> Component.text("§r").append(c))
+                .toList()
+                .toArray(TextComponent[]::new));
     }
 
     @NotNull
@@ -317,7 +318,7 @@ public class ChatText {
     }
 
     public boolean isBlank() {
-        return plainText().isBlank();
+        return isEmpty() || plainText().isBlank();
     }
 
     public boolean hasContent() {
@@ -541,6 +542,9 @@ public class ChatText {
             if (mergeWithPreviousPart(parts, nextPart))
                 parts.add(nextPart);
         }
+        if (!currentFormatting.empty())
+            parts.add(Part.part("", currentFormatting));
+
         return new ChatText(parts);
     }
 
