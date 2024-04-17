@@ -28,9 +28,10 @@ public class SaveListGUI extends PagedGUI {
 
     public SaveListGUI(@Nullable final ServerListGUI previous, @NotNull final Player p,
                        @NotNull final CachedServer server, @NotNull final String query) {
-        super(previous, p, "save-list", "§1§lBases of "
+        super(previous, p, "save-list", "§1§l"
+                + (query.isEmpty() ? "Bases of" : "Searching")
+                + " "
                 + server.name()
-                + (query.isEmpty() ? "" : " : Searching")
         );
         this.server = server;
         this.query = sanitizeQuery(query);
