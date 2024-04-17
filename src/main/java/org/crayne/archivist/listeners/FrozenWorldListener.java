@@ -1,37 +1,46 @@
 package org.crayne.archivist.listeners;
 
+import com.destroystokyo.paper.event.block.BlockDestroyEvent;
 import com.destroystokyo.paper.event.entity.EntityPathfindEvent;
 import com.destroystokyo.paper.event.player.PlayerElytraBoostEvent;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.Container;
+import org.bukkit.block.ShulkerBox;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.type.Door;
+import org.bukkit.block.data.type.EnderChest;
+import org.bukkit.block.data.type.Sign;
+import org.bukkit.block.data.type.TrapDoor;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockRedstoneEvent;
+import org.bukkit.event.block.*;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.hanging.HangingBreakEvent;
-import org.bukkit.event.player.PlayerDropItemEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.BlockStateMeta;
 import org.crayne.archivist.ArchivistPlugin;
 import org.crayne.archivist.gui.ContainerViewGUI;
 import org.crayne.archivist.gui.ServerListGUI;
 import org.crayne.archivist.inventory.ArchivistInventory;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class FrozenWorldListener implements Listener {
 
     @EventHandler
     public void damageEvent(@NotNull final EntityDamageEvent ev) {
-        ev.setCancelled(true);
+        if (ev.getCause() != EntityDamageEvent.DamageCause.KILL)
+            ev.setCancelled(true);
     }
 
     @EventHandler
@@ -53,28 +62,76 @@ public class FrozenWorldListener implements Listener {
     }
 
     @EventHandler
-    public void blockInteractEvent(@NotNull final PlayerInteractEvent ev) {
-        final Block block = ev.getClickedBlock();
-        if (block == null) {
-            if (ArchivistInventory.isBrowserItem(ev.getItem()))
-                new ServerListGUI(ev.getPlayer()).open();
+    public void entityExplodeEvent(@NotNull final EntityExplodeEvent ev) {
+        ev.setCancelled(true);
+    }
 
-            cancelDepletion(ev);
-            return;
+    private static void handleAirRightClick(@NotNull final PlayerInteractEvent ev, @NotNull final Player p,
+                                            @Nullable final ItemStack item) {
+        if (ArchivistInventory.isBrowserItem(item))
+            new ServerListGUI(p).open();
+
+        if (item != null && item.getItemMeta() instanceof final BlockStateMeta meta
+                && meta.getBlockState() instanceof final ShulkerBox shulkerBox) {
+            new ContainerViewGUI(p, shulkerBox.getInventory(), meta.displayName()).open();
         }
-        if (block.getType() == Material.ENDER_CHEST) {
+        cancelDepletion(ev);
+    }
+
+    private static boolean handleSignRightClick(@NotNull final PlayerInteractEvent ev,
+                                                @NotNull final BlockData data) {
+        if (data instanceof Sign) {
             ev.setCancelled(true);
-            return;
+            return true;
         }
-        if (!(block.getState() instanceof final Container container)) {
+        return false;
+    }
+
+    private static boolean handleDisallowedRightClick(@NotNull final PlayerInteractEvent ev,
+                                                      @NotNull final BlockData data) {
+        if (data instanceof EnderChest || data instanceof Door
+                || data instanceof TrapDoor) {
+            ev.setCancelled(true);
+            return true;
+        }
+        return false;
+    }
+
+    private static void handleContainerRightClick(@NotNull final PlayerInteractEvent ev,
+                                                  @NotNull final Player p,
+                                                  @NotNull final Block block) {
+        final BlockState state = block.getState();
+        if (!(state instanceof final Container container)) {
             cancelDepletion(ev);
             return;
         }
-
         ev.setCancelled(true);
 
         final Inventory inventory = container.getInventory();
-        new ContainerViewGUI(ev.getPlayer(), inventory, container.customName()).open();
+        new ContainerViewGUI(p, inventory, container.customName()).open();
+    }
+
+    @EventHandler
+    public void blockInteractEvent(@NotNull final PlayerInteractEvent ev) {
+        final Block block = ev.getClickedBlock();
+        final Player p = ev.getPlayer();
+        final ItemStack item = ev.getItem();
+        final Action action = ev.getAction();
+
+        if (block == null) {
+            if (action != Action.RIGHT_CLICK_AIR) return;
+
+            handleAirRightClick(ev, p, item);
+            return;
+        }
+        if (action != Action.RIGHT_CLICK_BLOCK) return;
+        final BlockData data = block.getBlockData();
+
+        if (handleSignRightClick(ev, data)) return;
+        if (p.getGameMode() == GameMode.CREATIVE) return;
+        if (handleDisallowedRightClick(ev, data)) return;
+
+        handleContainerRightClick(ev, p, block);
     }
 
     private static void cancelDepletion(@NotNull final PlayerInteractEvent ev) {
@@ -133,6 +190,16 @@ public class FrozenWorldListener implements Listener {
     }
 
     @EventHandler
+    public void teleportEvent(@NotNull final PlayerTeleportEvent ev) {
+        final PlayerTeleportEvent.TeleportCause cause = ev.getCause();
+
+        if (cause != PlayerTeleportEvent.TeleportCause.ENDER_PEARL
+                && cause != PlayerTeleportEvent.TeleportCause.PLUGIN
+                && cause != PlayerTeleportEvent.TeleportCause.COMMAND)
+            ev.setCancelled(true);
+    }
+
+    @EventHandler
     public void entityPathfindEvent(@NotNull final EntityPathfindEvent ev) {
         ev.setCancelled(true);
     }
@@ -144,6 +211,61 @@ public class FrozenWorldListener implements Listener {
 
     @EventHandler
     public void itemDespawnEvent(@NotNull final ItemDespawnEvent ev) {
+        ev.setCancelled(true);
+    }
+
+    @EventHandler
+    public void blockPhysicsEvent(@NotNull final BlockPhysicsEvent ev) {
+        ev.setCancelled(true);
+    }
+
+    @EventHandler
+    public void blockFromToEvent(@NotNull final BlockFromToEvent ev) {
+        ev.setCancelled(true);
+    }
+
+    @EventHandler
+    public void blockEvent(@NotNull final BlockSpreadEvent ev) {
+        ev.setCancelled(true);
+    }
+
+    @EventHandler
+    public void blockBurnEvent(@NotNull final BlockBurnEvent ev) {
+        ev.setCancelled(true);
+    }
+
+    @EventHandler
+    public void blockDestroyEvent(@NotNull final BlockDestroyEvent ev) {
+        ev.setCancelled(true);
+    }
+
+    @EventHandler
+    public void blockDispenseEvent(@NotNull final BlockDispenseEvent ev) {
+        ev.setCancelled(true);
+    }
+
+    @EventHandler
+    public void blockExplodeEvent(@NotNull final BlockExplodeEvent ev) {
+        ev.setCancelled(true);
+    }
+
+    @EventHandler
+    public void blockFertilizeEvent(@NotNull final BlockFertilizeEvent ev) {
+        ev.setCancelled(true);
+    }
+
+    @EventHandler
+    public void blockGrowEvent(@NotNull final BlockGrowEvent ev) {
+        ev.setCancelled(true);
+    }
+
+    @EventHandler
+    public void blockPistonEvent(@NotNull final BlockPistonExtendEvent ev) {
+        ev.setCancelled(true);
+    }
+
+    @EventHandler
+    public void blockPistonEvent(@NotNull final BlockPistonRetractEvent ev) {
         ev.setCancelled(true);
     }
 

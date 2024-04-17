@@ -29,6 +29,7 @@ public class ContainerViewGUI extends Gui {
     }
 
     public void onOpen(@NotNull final InventoryOpenEvent ev) {
+        int slot = 0;
         for (final ItemStack itemStack : inventory.getContents()) {
             final Icon icon = new Icon(itemStack).onClick(e -> {
                 if (itemStack == null
@@ -37,7 +38,8 @@ public class ContainerViewGUI extends Gui {
 
                 player.getInventory().addItem(itemStack.clone());
             });
-            addItem(icon);
+            addItem(slot, icon);
+            slot++;
         }
     }
 

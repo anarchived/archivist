@@ -11,3 +11,5 @@ commands:
     description: GUI-based base/server search to quickly find a save
   reindex:
     description: Reindexes the entire archive automatically
+  spawn:
+    description: Teleport to spawn
