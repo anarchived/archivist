@@ -50,8 +50,12 @@ public class FrozenWorldListener implements Listener {
 
     @EventHandler
     public void entityInteractEvent(@NotNull final PlayerInteractEntityEvent ev) {
+        final Player p = ev.getPlayer();
+        if (p.getGameMode() == GameMode.CREATIVE) return;
+
         if (ev.getRightClicked() instanceof final ItemFrame itemFrame)
-            ev.getPlayer().getInventory().addItem(itemFrame.getItem().clone());
+            p.getInventory().addItem(itemFrame.getItem().clone());
+
         ev.setCancelled(true);
     }
 
@@ -171,6 +175,8 @@ public class FrozenWorldListener implements Listener {
 
     @EventHandler
     public void dropEvent(@NotNull final PlayerDropItemEvent ev) {
+        if (ev.getPlayer().getGameMode() == GameMode.CREATIVE) return;
+
         ev.setCancelled(true);
     }
 
