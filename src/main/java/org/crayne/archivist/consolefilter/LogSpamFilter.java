@@ -24,7 +24,8 @@ public class LogSpamFilter implements Filter {
             "moved too quickly!",
             "Ignoring plugin channel in incoming REGISTER",
             "Entity uuid already exists",
-            "Unable to load item from"
+            "Unable to load item from",
+            "is outside of serialized chunk"
     );
 
     public Result filter(@NotNull final LogEvent event) {
