@@ -29,7 +29,7 @@ public class GoCommand implements CommandExecutor {
             new ServerListGUI(p).open();
             return true;
         }
-        final Optional<CachedServer> server = requireServer(args, p);
+        final Optional<CachedServer> server = requireServer(args[0], p);
         if (server.isEmpty()) return false;
 
         final String query = Arrays.stream(args, 1, args.length).
@@ -40,9 +40,8 @@ public class GoCommand implements CommandExecutor {
     }
 
     @NotNull
-    private static Optional<CachedServer> requireServer(@NotNull final String[] args, @NotNull final Player p) {
+    public static Optional<CachedServer> requireServer(@NotNull final String serverName, @NotNull final Player p) {
         final CachedServerIndex serverIndex = ArchivistPlugin.instance().serverIndex();
-        final String serverName = args[0];
         final CachedServer server = serverIndex.cachedServers().get(serverName);
         if (server == null) {
             p.sendMessage(errorMessage("Could not find the server '" + serverName + "'"));

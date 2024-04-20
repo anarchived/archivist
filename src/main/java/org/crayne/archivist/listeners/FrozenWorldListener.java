@@ -5,6 +5,7 @@ import com.destroystokyo.paper.event.entity.EntityPathfindEvent;
 import com.destroystokyo.paper.event.player.PlayerElytraBoostEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
@@ -29,11 +30,17 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.BlockStateMeta;
 import org.crayne.archivist.ArchivistPlugin;
+import org.crayne.archivist.command.GoCommand;
 import org.crayne.archivist.gui.ContainerViewGUI;
+import org.crayne.archivist.gui.SaveListGUI;
 import org.crayne.archivist.gui.ServerListGUI;
+import org.crayne.archivist.index.cached.CachedServer;
 import org.crayne.archivist.inventory.ArchivistInventory;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Map;
+import java.util.Optional;
 
 public class FrozenWorldListener implements Listener {
 
@@ -48,15 +55,48 @@ public class FrozenWorldListener implements Listener {
         ev.setCancelled(true);
     }
 
+    private record Vec3(int x, int y, int z) {
+
+        @NotNull
+        public static Vec3 of(@NotNull final Location location) {
+            return new Vec3(location.getBlockX(), location.getBlockY(), location.getBlockZ());
+        }
+
+    }
+
+    // too lazy to make a config for this currently
+    @NotNull
+    private static final Map<Vec3, String> INTERACTABLES_SERVER_NAME_MAP = Map.of(
+            new Vec3(-10, 66, 10), "0b0t.org"
+    );
+
+    private static void handleSpawnInteraction(@NotNull final Player p, @NotNull final Entity entity) {
+        final Location location = entity.getLocation();
+
+        if (!location.getWorld().equals(ArchivistPlugin.instance().spawnWorld().spawnWorld())) return;
+
+        final Vec3 vec3 = Vec3.of(location);
+        final String serverName = INTERACTABLES_SERVER_NAME_MAP.get(vec3);
+        if (serverName == null) return;
+
+        final Optional<CachedServer> server = GoCommand.requireServer(serverName, p);
+        if (server.isEmpty()) return;
+
+        new SaveListGUI(p, server.get(), "").open();
+    }
+
     @EventHandler
     public void entityInteractEvent(@NotNull final PlayerInteractEntityEvent ev) {
         final Player p = ev.getPlayer();
         if (p.getGameMode() == GameMode.CREATIVE) return;
 
-        if (ev.getRightClicked() instanceof final ItemFrame itemFrame)
+        final Entity entity = ev.getRightClicked();
+
+        if (entity instanceof final ItemFrame itemFrame)
             p.getInventory().addItem(itemFrame.getItem().clone());
 
         ev.setCancelled(true);
+        handleSpawnInteraction(p, entity);
     }
 
     @EventHandler
