@@ -14,7 +14,6 @@ import org.crayne.archivist.consolefilter.LogSpamFilter;
 import org.crayne.archivist.index.IndexingException;
 import org.crayne.archivist.index.cached.CachedServerIndex;
 import org.crayne.archivist.inventory.ArchivistInventory;
-import org.crayne.archivist.listeners.ChatListener;
 import org.crayne.archivist.listeners.FrozenWorldListener;
 import org.crayne.archivist.world.SpawnWorld;
 import org.jetbrains.annotations.NotNull;
@@ -36,8 +35,7 @@ public class ArchivistPlugin extends JavaPlugin {
         registerListeners(
                 spawnWorld = new SpawnWorld(),
                 new FrozenWorldListener(),
-                new ArchivistInventory(),
-                new ChatListener()
+                new ArchivistInventory()
         );
         serverIndex = CachedServerIndex.loadServerIndex()
                 .orElseThrow(() -> new IndexingException("Cannot load empty archive"));
