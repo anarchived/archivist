@@ -1,4 +1,4 @@
-package org.crayne.archivist.index.blob.save;
+package org.crayne.archivist.util.world;
 
 import org.bukkit.Location;
 import org.bukkit.World;

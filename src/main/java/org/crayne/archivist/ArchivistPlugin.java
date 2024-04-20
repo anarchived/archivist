@@ -2,6 +2,7 @@ package org.crayne.archivist;
 
 import mc.obliviate.inventory.InventoryAPI;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.event.Listener;
@@ -11,11 +12,10 @@ import org.crayne.archivist.command.GoToCommand;
 import org.crayne.archivist.command.ReindexCommand;
 import org.crayne.archivist.command.SpawnCommand;
 import org.crayne.archivist.consolefilter.LogSpamFilter;
-import org.crayne.archivist.index.IndexingException;
-import org.crayne.archivist.index.cached.CachedServerIndex;
+import org.crayne.archivist.index.cache.IndexCache;
 import org.crayne.archivist.inventory.ArchivistInventory;
-import org.crayne.archivist.listeners.FrozenWorldListener;
-import org.crayne.archivist.world.SpawnWorld;
+import org.crayne.archivist.listeners.WorldListener;
+import org.crayne.archivist.util.world.SpawnWorld;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -26,7 +26,7 @@ import java.util.logging.Level;
 public class ArchivistPlugin extends JavaPlugin {
 
     private SpawnWorld spawnWorld;
-    private CachedServerIndex serverIndex;
+    private IndexCache indexCache;
 
     private static ArchivistPlugin INSTANCE;
 
@@ -34,11 +34,16 @@ public class ArchivistPlugin extends JavaPlugin {
         INSTANCE = this;
         registerListeners(
                 spawnWorld = new SpawnWorld(),
-                new FrozenWorldListener(),
+                new WorldListener(),
                 new ArchivistInventory()
         );
-        serverIndex = CachedServerIndex.loadServerIndex()
-                .orElseThrow(() -> new IndexingException("Cannot load empty archive"));
+        indexCache = new IndexCache();
+        indexCache.load();
+        indexCache.copyRegionFiles();
+        indexCache.loadAllVariants();
+
+        ArchivistPlugin.log("Successfully loaded index", Level.INFO);
+        ArchivistPlugin.log("Index tree:\n" + IndexCache.archivedServerSaves(), Level.INFO);
 
         new InventoryAPI(this).init();
         registerCommands(Map.of(
@@ -47,7 +52,7 @@ public class ArchivistPlugin extends JavaPlugin {
                 "reindex", new ReindexCommand(),
                 "spawn", new SpawnCommand()
         ));
-        ((org.apache.logging.log4j.core.Logger) LogManager.getRootLogger()).addFilter(new LogSpamFilter());
+        ((Logger) LogManager.getRootLogger()).addFilter(new LogSpamFilter());
     }
 
     public void onDisable() {
@@ -59,7 +64,7 @@ public class ArchivistPlugin extends JavaPlugin {
     }
 
     public void unloadAllBlobs() {
-        serverIndex.collectBlobs().keySet().forEach(world -> Bukkit.unloadWorld(world, false));
+        indexCache.collectBlobs().forEach(world -> Bukkit.unloadWorld(world, false));
     }
 
     @NotNull
@@ -72,8 +77,8 @@ public class ArchivistPlugin extends JavaPlugin {
     }
 
     @NotNull
-    public CachedServerIndex serverIndex() {
-        return serverIndex;
+    public IndexCache indexCache() {
+        return indexCache;
     }
 
     @NotNull

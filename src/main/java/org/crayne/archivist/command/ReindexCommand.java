@@ -3,15 +3,16 @@ package org.crayne.archivist.command;
 import net.kyori.adventure.text.Component;
 import org.apache.commons.io.FileUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.crayne.archivist.ArchivistPlugin;
-import org.crayne.archivist.index.cached.CachedServerIndex;
+import org.crayne.archivist.index.IndexingException;
+import org.crayne.archivist.index.cache.IndexCache;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.Set;
 
 public class ReindexCommand implements CommandExecutor {
@@ -25,15 +26,14 @@ public class ReindexCommand implements CommandExecutor {
                         "Please be patient; it will be back soon."
         )));
         ArchivistPlugin.instance().unloadAllBlobs();
-        final CachedServerIndex cachedServerIndex = ArchivistPlugin.instance().serverIndex();
-        final Set<String> blobWorldFiles = cachedServerIndex.collectBlobs().keySet();
+        final IndexCache indexCache = ArchivistPlugin.instance().indexCache();
+        final Set<World> blobWorlds  = indexCache.collectBlobs();
         try {
-            Files.delete(CachedServerIndex.cachedServerIndexPath());
-            for (final String blob : blobWorldFiles) {
-                FileUtils.deleteDirectory(CachedServerIndex.rootDirectory().resolve(blob).toFile());
+            for (final World world : blobWorlds) {
+                FileUtils.deleteDirectory(IndexCache.rootDirectory().resolve(world.getName()).toFile());
             }
         } catch (final IOException e) {
-            throw new RuntimeException(e);
+            throw new IndexingException(e);
         }
         Bukkit.shutdown();
         return true;

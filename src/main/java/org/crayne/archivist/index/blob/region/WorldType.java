@@ -1,21 +1,22 @@
 package org.crayne.archivist.index.blob.region;
 
+import org.bukkit.World;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Optional;
 
-public enum World {
+public enum WorldType {
 
-    OVERWORLD("world"),
+    OVERWORLD("worldType"),
     NETHER("world_nether"),
     END("world_the_end");
 
     @NotNull
     private final String worldDirectoryName;
 
-    World(@NotNull final String worldDirectoryName) {
+    WorldType(@NotNull final String worldDirectoryName) {
         this.worldDirectoryName = worldDirectoryName;
     }
 
@@ -30,18 +31,18 @@ public enum World {
     }
 
     @NotNull
-    public static Optional<World> of(@NotNull final String name) {
+    public static Optional<WorldType> of(@NotNull final String name) {
         return Arrays.stream(values())
                 .filter(d -> d.name().equalsIgnoreCase(name))
                 .findAny();
     }
 
     @NotNull
-    public org.bukkit.World.Environment environment() {
+    public World.Environment environment() {
         return switch (this) {
-            case OVERWORLD -> org.bukkit.World.Environment.NORMAL;
-            case END -> org.bukkit.World.Environment.THE_END;
-            case NETHER -> org.bukkit.World.Environment.NETHER;
+            case OVERWORLD -> World.Environment.NORMAL;
+            case END -> World.Environment.THE_END;
+            case NETHER -> World.Environment.NETHER;
         };
     }
 

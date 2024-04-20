@@ -6,26 +6,28 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.crayne.archivist.ArchivistPlugin;
+import org.crayne.archivist.gui.util.LoreUtil;
+import org.crayne.archivist.index.IndexFile;
+import org.crayne.archivist.index.cache.IndexCache;
+import org.crayne.archivist.index.cache.ServerCache;
+import org.crayne.archivist.inventory.ArchivistInventory;
 import org.crayne.archivist.text.ChatText;
 import org.crayne.archivist.text.markdown.MarkdownBookRenderer;
-import org.crayne.archivist.gui.util.LoreUtil;
-import org.crayne.archivist.index.cached.CachedServer;
-import org.crayne.archivist.index.cached.CachedServerIndex;
-import org.crayne.archivist.index.cached.MapUtil;
-import org.crayne.archivist.inventory.ArchivistInventory;
+import org.crayne.archivist.util.MapUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class ServerListGUI extends PagedGUI {
 
     @NotNull
-    private final CachedServerIndex serverIndex;
+    private final IndexCache indexCache;
 
     public ServerListGUI(@NotNull final Player p) {
         super(p, "server-list", "§1§lServer List");
-        serverIndex = ArchivistPlugin.instance().serverIndex();
+        indexCache = ArchivistPlugin.instance().indexCache();
     }
 
     @NotNull
@@ -37,9 +39,9 @@ public class ServerListGUI extends PagedGUI {
     );
 
     public void update(@NotNull final PaginationManager pagination) {
-        for (final CachedServer server : serverIndex.cachedServers().values()) {
+        for (final ServerCache server : indexCache.serverCacheMap().values()) {
             final List<String> lore = new ArrayList<>(LORE_DEFAULT);
-            LoreUtil.addRemainingLines(lore, MapUtil.sortMapByKey(server.saves()).keySet().stream().toList());
+            LoreUtil.addRemainingLines(lore, MapUtil.sortMapByKey(server.saveCacheMap()).keySet().stream().toList());
 
             final ChatText title = ArchivistInventory.mainText(server.name());
 
@@ -48,7 +50,10 @@ public class ServerListGUI extends PagedGUI {
                     .setLore(lore)
                     .onClick(e -> {
                         if (e.getClick() == ClickType.RIGHT || e.getClick() == ClickType.SHIFT_RIGHT) {
-                            MarkdownBookRenderer.displayMarkdownToPlayer(player, server.markdownContent());
+                            final Optional<IndexFile> indexFile = server.index().indexFile();
+                            if (indexFile.isEmpty()) return;
+
+                            MarkdownBookRenderer.displayMarkdownToPlayer(player, indexFile.get());
                             return;
                         }
                         new SaveListGUI(this, player, server).open();

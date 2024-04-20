@@ -1,4 +1,4 @@
-package org.crayne.archivist.index.cached;
+package org.crayne.archivist.util;
 
 import org.jetbrains.annotations.NotNull;
 

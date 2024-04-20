@@ -1,28 +1,29 @@
 package org.crayne.archivist.index.blob;
 
 import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.WorldCreator;
-import org.crayne.archivist.index.blob.region.World;
-import org.crayne.archivist.world.SpawnWorld;
+import org.crayne.archivist.index.blob.region.WorldType;
+import org.crayne.archivist.util.world.SpawnWorld;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
-public record BlobLevel(int blobIndex, @NotNull World world, @NotNull String serverTitle) {
+public record BlobLevel(int blobIndex, @NotNull WorldType worldType, @NotNull String serverTitle) {
 
     @NotNull
-    public org.bukkit.World requireWorld() {
+    public World requireWorld() {
         return Objects.requireNonNull(Bukkit.getWorld(fullIdentifier()));
     }
 
     @NotNull
     public String fullIdentifier() {
-        return serverTitle + "_blob" + blobIndex + "_" + world;
+        return serverTitle + "_blob" + blobIndex + "_" + worldType;
     }
 
     @NotNull
-    public static org.bukkit.World createWorld(@NotNull final String worldName, @NotNull final org.bukkit.World.Environment environment) {
-        final org.bukkit.World world = Bukkit.createWorld(new WorldCreator(worldName)
+    public static World createWorld(@NotNull final String worldName, @NotNull final World.Environment environment) {
+        final World world = Bukkit.createWorld(new WorldCreator(worldName)
                 .generator(SpawnWorld.EMPTY_GENERATOR)
                 .environment(environment)
         );
@@ -32,8 +33,8 @@ public record BlobLevel(int blobIndex, @NotNull World world, @NotNull String ser
     }
 
     @NotNull
-    public org.bukkit.World createWorld() {
-        return createWorld(fullIdentifier(), world.environment());
+    public World createWorld() {
+        return createWorld(fullIdentifier(), worldType.environment());
     }
 
 }

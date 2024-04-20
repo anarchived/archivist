@@ -5,29 +5,30 @@ import mc.obliviate.inventory.pagination.PaginationManager;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
-import org.crayne.archivist.text.markdown.MarkdownBookRenderer;
 import org.crayne.archivist.gui.util.LoreUtil;
-import org.crayne.archivist.index.cached.CachedSave;
-import org.crayne.archivist.index.cached.CachedServer;
+import org.crayne.archivist.index.IndexFile;
+import org.crayne.archivist.index.cache.SaveCache;
+import org.crayne.archivist.index.cache.ServerCache;
 import org.crayne.archivist.inventory.ArchivistInventory;
 import org.crayne.archivist.text.ChatText;
+import org.crayne.archivist.text.markdown.MarkdownBookRenderer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 
 public class SaveListGUI extends PagedGUI {
 
     @NotNull
-    private final CachedServer server;
+    private final ServerCache server;
 
     @NotNull
     private final String query;
 
     public SaveListGUI(@Nullable final ServerListGUI previous, @NotNull final Player p,
-                       @NotNull final CachedServer server, @NotNull final String query) {
+                       @NotNull final ServerCache server, @NotNull final String query) {
         super(previous, p, "save-list", "§1§l"
                 + (query.isEmpty() ? "Bases of" : "Searching")
                 + " "
@@ -38,11 +39,12 @@ public class SaveListGUI extends PagedGUI {
     }
 
     public SaveListGUI(@NotNull final Player p,
-                       @NotNull final CachedServer server, @NotNull final String query) {
+                       @NotNull final ServerCache server, @NotNull final String query) {
         this(null, p, server, query);
     }
 
-    public SaveListGUI(@NotNull final ServerListGUI previous, @NotNull final Player p, @NotNull final CachedServer server) {
+    public SaveListGUI(@NotNull final ServerListGUI previous, @NotNull final Player p,
+                       @NotNull final ServerCache server) {
         this(previous, p, server, "");
     }
 
@@ -59,16 +61,12 @@ public class SaveListGUI extends PagedGUI {
     );
 
     public void update(@NotNull final PaginationManager pagination) {
-        for (final CachedSave save : server.saves().values()) {
+        for (final SaveCache save : server.saveCacheMap().values()) {
             final String nameSanitized = sanitizeQuery(save.name());
             if (!query.isEmpty() && !nameSanitized.contains(query)) continue;
 
             final List<String> lore = new ArrayList<>(LORE_DEFAULT);
-            LoreUtil.addRemainingLines(lore, save.data()
-                    .variantWorldsSorted()
-                    .stream()
-                    .map(Map.Entry::getKey)
-                    .toList());
+            LoreUtil.addRemainingLines(lore, save.variants().keySet());
 
             final ChatText title = ArchivistInventory.mainText(save.name());
 
@@ -77,7 +75,10 @@ public class SaveListGUI extends PagedGUI {
                     .setLore(lore)
                     .onClick(e -> {
                         if (e.getClick() == ClickType.RIGHT || e.getClick() == ClickType.SHIFT_RIGHT) {
-                            MarkdownBookRenderer.displayMarkdownToPlayer(player, save.data().markdownContent());
+                            final Optional<IndexFile> indexFile = save.index().indexFile();
+                            if (indexFile.isEmpty()) return;
+
+                            MarkdownBookRenderer.displayMarkdownToPlayer(player, indexFile.get());
                             return;
                         }
                         new SaveGUI(this, player, save).open();

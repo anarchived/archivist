@@ -5,28 +5,30 @@ import mc.obliviate.inventory.pagination.PaginationManager;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.crayne.archivist.index.cached.CachedSave;
-import org.crayne.archivist.index.cached.CachedSaveData;
+import org.crayne.archivist.index.cache.SaveCache;
 import org.crayne.archivist.inventory.ArchivistInventory;
 import org.crayne.archivist.text.ChatText;
+import org.crayne.archivist.util.world.Position;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
+import java.util.Optional;
 
 public class SaveGUI extends PagedGUI {
 
     @NotNull
-    private final CachedSave save;
+    private final SaveCache save;
 
-    public SaveGUI(@NotNull final SaveListGUI previous, @NotNull final Player p, @NotNull final CachedSave save) {
+    public SaveGUI(@NotNull final SaveListGUI previous, @NotNull final Player p, @NotNull final SaveCache save) {
         super(previous, p, "save", "§1§l" + save.name());
         this.save = save;
     }
 
     public void update(@NotNull final PaginationManager pagination) {
-        final CachedSaveData data = save.data();
+        for (final Map.Entry<String, World> variant : save.variants().entrySet()) {
+            final Optional<Position> position = save.position();
+            if (position.isEmpty()) return;
 
-        for (final Map.Entry<String, World> variant : data.variantWorldsSorted()) {
             final ChatText title = ArchivistInventory.mainText(variant.getKey());
             final ChatText teleportMessage = ArchivistInventory.mainText("Teleported you to ")
                     .append(ArchivistInventory.secondaryText(save.name() + "-" + variant.getKey()));
@@ -35,7 +37,7 @@ public class SaveGUI extends PagedGUI {
                     .setName(title.legacyText())
                     .onClick(e -> {
                         player.closeInventory();
-                        player.teleport(data.position().toLocation(variant.getValue()));
+                        player.teleport(position.get().toLocation(variant.getValue()));
                         player.sendMessage(teleportMessage.legacyText());
                     }));
         }

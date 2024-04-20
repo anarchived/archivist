@@ -34,15 +34,16 @@ import org.crayne.archivist.command.GoCommand;
 import org.crayne.archivist.gui.ContainerViewGUI;
 import org.crayne.archivist.gui.SaveListGUI;
 import org.crayne.archivist.gui.ServerListGUI;
-import org.crayne.archivist.index.cached.CachedServer;
+import org.crayne.archivist.index.cache.ServerCache;
 import org.crayne.archivist.inventory.ArchivistInventory;
+import org.crayne.archivist.util.world.BlockPosition;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.Optional;
 
-public class FrozenWorldListener implements Listener {
+public class WorldListener implements Listener {
 
     @EventHandler
     public void damageEvent(@NotNull final EntityDamageEvent ev) {
@@ -55,19 +56,10 @@ public class FrozenWorldListener implements Listener {
         ev.setCancelled(true);
     }
 
-    private record Vec3(int x, int y, int z) {
-
-        @NotNull
-        public static Vec3 of(@NotNull final Location location) {
-            return new Vec3(location.getBlockX(), location.getBlockY(), location.getBlockZ());
-        }
-
-    }
-
     // too lazy to make a config for this currently
     @NotNull
-    private static final Map<Vec3, String> INTERACTABLES_SERVER_NAME_MAP = Map.of(
-            new Vec3(-10, 66, 10), "0b0t.org"
+    private static final Map<BlockPosition, String> INTERACTABLES_SERVER_NAME_MAP = Map.of(
+            new BlockPosition(-10, 66, 10), "0b0t.org"
     );
 
     private static void handleSpawnInteraction(@NotNull final Player p, @NotNull final Entity entity) {
@@ -75,11 +67,11 @@ public class FrozenWorldListener implements Listener {
 
         if (!location.getWorld().equals(ArchivistPlugin.instance().spawnWorld().spawnWorld())) return;
 
-        final Vec3 vec3 = Vec3.of(location);
-        final String serverName = INTERACTABLES_SERVER_NAME_MAP.get(vec3);
+        final BlockPosition blockPosition = BlockPosition.of(location);
+        final String serverName = INTERACTABLES_SERVER_NAME_MAP.get(blockPosition);
         if (serverName == null) return;
 
-        final Optional<CachedServer> server = GoCommand.requireServer(serverName, p);
+        final Optional<ServerCache> server = GoCommand.requireServer(serverName, p);
         if (server.isEmpty()) return;
 
         new SaveListGUI(p, server.get(), "").open();

@@ -7,8 +7,8 @@ import org.bukkit.entity.Player;
 import org.crayne.archivist.ArchivistPlugin;
 import org.crayne.archivist.gui.SaveListGUI;
 import org.crayne.archivist.gui.ServerListGUI;
-import org.crayne.archivist.index.cached.CachedServer;
-import org.crayne.archivist.index.cached.CachedServerIndex;
+import org.crayne.archivist.index.cache.IndexCache;
+import org.crayne.archivist.index.cache.ServerCache;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -29,7 +29,7 @@ public class GoCommand implements CommandExecutor {
             new ServerListGUI(p).open();
             return true;
         }
-        final Optional<CachedServer> server = requireServer(args[0], p);
+        final Optional<ServerCache> server = requireServer(args[0], p);
         if (server.isEmpty()) return false;
 
         final String query = Arrays.stream(args, 1, args.length).
@@ -40,14 +40,15 @@ public class GoCommand implements CommandExecutor {
     }
 
     @NotNull
-    public static Optional<CachedServer> requireServer(@NotNull final String serverName, @NotNull final Player p) {
-        final CachedServerIndex serverIndex = ArchivistPlugin.instance().serverIndex();
-        final CachedServer server = serverIndex.cachedServers().get(serverName);
-        if (server == null) {
+    public static Optional<ServerCache> requireServer(@NotNull final String serverName, @NotNull final Player p) {
+        final IndexCache indexCache = ArchivistPlugin.instance().indexCache();
+        final Optional<ServerCache> server = indexCache.resolveServerCache(serverName);
+
+        if (server.isEmpty()) {
             p.sendMessage(errorMessage("Could not find the server '" + serverName + "'"));
             return Optional.empty();
         }
-        return Optional.of(server);
+        return server;
     }
 
 }

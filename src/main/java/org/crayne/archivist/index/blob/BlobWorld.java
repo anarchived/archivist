@@ -1,13 +1,13 @@
 package org.crayne.archivist.index.blob;
 
 import org.crayne.archivist.index.IndexingException;
-import org.crayne.archivist.index.blob.region.World;
+import org.crayne.archivist.index.blob.region.WorldType;
 import org.jetbrains.annotations.NotNull;
 
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 public class BlobWorld {
 
@@ -15,15 +15,15 @@ public class BlobWorld {
     private final Map<Integer, Blob> blobs;
 
     @NotNull
-    private final World world;
+    private final WorldType worldType;
 
-    public BlobWorld(@NotNull final World world) {
+    public BlobWorld(@NotNull final WorldType worldType) {
         this.blobs = new HashMap<>();
-        this.world = world;
+        this.worldType = worldType;
     }
 
     public void merge(@NotNull final Blob blob) {
-        if (blob.world() != world)
+        if (blob.world() != worldType)
             throw new IndexingException("Cannot merge blobs of different worlds together");
 
         int i = 0;
@@ -37,17 +37,17 @@ public class BlobWorld {
         blobs.put(i, blob);
     }
 
-    public int findBlobIndex(@NotNull final UUID regionUUID) {
+    public int findBlobIndex(@NotNull final Path path) {
         for (int level : blobs.keySet()) {
             final Blob blob = blobs.get(level);
-            if (blob.hasRegion(regionUUID)) return level;
+            if (blob.hasRegion(path)) return level;
         }
         return -1;
     }
 
     @NotNull
-    public World world() {
-        return world;
+    public WorldType world() {
+        return worldType;
     }
 
     @NotNull
@@ -59,7 +59,7 @@ public class BlobWorld {
     public String toString() {
         return "BlobWorld{" +
                 "blobs=" + blobs +
-                ", world=" + world +
+                ", worldType=" + worldType +
                 '}';
     }
 }

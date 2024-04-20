@@ -27,8 +27,8 @@ public class GoToCommand implements CommandExecutor {
         }
         try {
             final Location location = ArchivistPlugin.instance()
-                    .serverIndex()
-                    .findSaveLocation(
+                    .indexCache()
+                    .requireSaveLocation(
                             args[0].replace("_", " "),
                             args[1].replace("_", " "),
                             args[2].replace("_", " ")

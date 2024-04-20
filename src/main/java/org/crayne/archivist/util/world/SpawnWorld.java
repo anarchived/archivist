@@ -1,4 +1,4 @@
-package org.crayne.archivist.world;
+package org.crayne.archivist.util.world;
 
 import org.bukkit.*;
 import org.bukkit.event.EventHandler;
