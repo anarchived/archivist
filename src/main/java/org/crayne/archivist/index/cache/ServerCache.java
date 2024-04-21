@@ -8,19 +8,20 @@ import org.crayne.archivist.index.IndexingException;
 import org.crayne.archivist.index.blob.BlobField;
 import org.crayne.archivist.index.blob.BlobLevel;
 import org.crayne.archivist.index.blob.region.Region;
+import org.crayne.archivist.index.maps.ExternalMap;
+import org.crayne.archivist.index.maps.VirtualMapRenderer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.logging.Level;
 
+import static org.crayne.archivist.index.cache.IndexCache.archivesDirectory;
 import static org.crayne.archivist.index.cache.IndexCache.rootDirectory;
 
 public class ServerCache {
@@ -61,13 +62,43 @@ public class ServerCache {
                 .forEach(save -> save.forEach(blobField::merge));
     }
 
+    private static boolean isRequiredMap(@NotNull final Path path, final int id) {
+        return path.getFileName().toString().equals("map_" + id + ".dat");
+    }
+
+    @NotNull
+    public Optional<VirtualMapRenderer> loadMapView(final int id, @NotNull final World world) {
+        final Optional<Path> mapPath = mapDataFiles()
+                .stream()
+                .filter(path -> isRequiredMap(path, id))
+                .findAny();
+
+        if (mapPath.isEmpty()) return Optional.empty();
+
+        try (final FileInputStream in = new FileInputStream(mapPath.get().toFile())) {
+            return Optional.of(ExternalMap.readMapFromFile(in, world));
+        } catch (final IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @NotNull
+    public static Path mapArchiveDirectory() {
+        return archivesDirectory().resolve("map-archive");
+    }
+
+    @NotNull
+    public List<Path> mapDataFiles() {
+        return new Index(mapArchiveDirectory().resolve(path.getFileName())).mapDataFiles();
+    }
+
     public void copyRegionFiles() {
         if (blobField == null) return;
 
         final Path rootDirectory = rootDirectory();
         final var blobRegions = blobField.blobRegions();
 
-        blobRegions.forEach(((blobLevel, regions) -> {
+        blobRegions.forEach((blobLevel, regions) -> {
             final String fullIdentifier = blobLevel.fullIdentifier();
             final Path worldDirectory = rootDirectory.resolve(fullIdentifier);
             if (Files.exists(worldDirectory)) {
@@ -91,7 +122,7 @@ public class ServerCache {
             }
             ArchivistPlugin.log("Successfully copied all region files to the new blob world", Level.INFO);
             ArchivistPlugin.log("Created blob level " + blobLevel.createWorld().getName(), Level.INFO);
-        }));
+        });
     }
 
     @NotNull

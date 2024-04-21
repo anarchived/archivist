@@ -253,6 +253,11 @@ public class WorldListener implements Listener {
     }
 
     @EventHandler
+    public void itemSpawnEvent(@NotNull final ItemSpawnEvent ev) {
+        ev.setCancelled(true);
+    }
+
+    @EventHandler
     public void blockPhysicsEvent(@NotNull final BlockPhysicsEvent ev) {
         ev.setCancelled(true);
     }

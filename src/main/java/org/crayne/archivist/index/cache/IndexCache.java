@@ -7,6 +7,7 @@ import org.crayne.archivist.index.Index;
 import org.crayne.archivist.index.IndexingException;
 import org.crayne.archivist.index.blob.BlobField;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -17,6 +18,9 @@ public class IndexCache {
 
     @NotNull
     private final Map<String, ServerCache> serverCacheMap;
+
+    @Nullable
+    private Map<World, ServerCache> blobCache;
 
     public IndexCache() {
         this.serverCacheMap = new HashMap<>();
@@ -36,7 +40,14 @@ public class IndexCache {
 
     @NotNull
     public Set<World> collectBlobs() {
-        return serverCacheMap.values()
+        return collectBlobWorldMap().keySet();
+    }
+
+    @NotNull
+    public Map<World, ServerCache> collectBlobWorldMap() {
+        if (blobCache != null && !blobCache.isEmpty()) return blobCache;
+
+        blobCache = serverCacheMap.values()
                 .stream()
                 .flatMap(serverCache ->
                         serverCache.saveCacheMap()
@@ -44,8 +55,11 @@ public class IndexCache {
                                 .stream()
                                 .flatMap(saveCache -> saveCache.variants()
                                         .values()
-                                        .stream()))
-                .collect(Collectors.toSet());
+                                        .stream())
+                                .map(world -> Map.entry(world, serverCache)))
+                .distinct()
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        return blobCache;
     }
 
     public void copyRegionFiles() {

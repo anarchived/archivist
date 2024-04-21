@@ -141,6 +141,11 @@ public class Index {
     }
 
     @NotNull
+    public List<Path> mapDataFiles() {
+        return indexFiles(Index::mapDataFile);
+    }
+
+    @NotNull
     private List<Path> indexFiles(@NotNull final DirectoryStream.Filter<? super Path> filter) {
         final List<Path> result = new ArrayList<>();
         try (final DirectoryStream<Path> stream = Files.newDirectoryStream(path, filter)) {
@@ -161,6 +166,11 @@ public class Index {
 
     private static boolean includePath(@NotNull final Path path) {
         return !path.getFileName().toString().startsWith(".");
+    }
+
+    private static boolean mapDataFile(@NotNull final Path path) {
+        final String fileName = path.getFileName().toString();
+        return fileName.startsWith("map_") && fileName.endsWith(".dat") && !Files.isDirectory(path);
     }
 
     @NotNull

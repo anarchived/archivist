@@ -13,11 +13,15 @@ import org.crayne.archivist.command.ReindexCommand;
 import org.crayne.archivist.command.SpawnCommand;
 import org.crayne.archivist.consolefilter.LogSpamFilter;
 import org.crayne.archivist.index.cache.IndexCache;
+import org.crayne.archivist.index.maps.MapColorTable;
 import org.crayne.archivist.inventory.ArchivistInventory;
+import org.crayne.archivist.listeners.MapLoadListener;
 import org.crayne.archivist.listeners.WorldListener;
 import org.crayne.archivist.util.world.SpawnWorld;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
@@ -28,6 +32,9 @@ public class ArchivistPlugin extends JavaPlugin {
     private SpawnWorld spawnWorld;
     private IndexCache indexCache;
 
+    @NotNull
+    private final MapColorTable mapColorTable = new MapColorTable();
+
     private static ArchivistPlugin INSTANCE;
 
     public void onEnable() {
@@ -35,12 +42,15 @@ public class ArchivistPlugin extends JavaPlugin {
         registerListeners(
                 spawnWorld = new SpawnWorld(),
                 new WorldListener(),
-                new ArchivistInventory()
+                new ArchivistInventory(),
+                new MapLoadListener()
         );
         indexCache = new IndexCache();
         indexCache.load();
         indexCache.copyRegionFiles();
         indexCache.loadAllVariants();
+
+        registerMapColors();
 
         ArchivistPlugin.log("Successfully loaded index", Level.INFO);
         ArchivistPlugin.log("Index tree:\n" + IndexCache.archivedServerSaves(), Level.INFO);
@@ -57,6 +67,15 @@ public class ArchivistPlugin extends JavaPlugin {
 
     public void onDisable() {
         unloadAllBlobs();
+    }
+
+    private void registerMapColors() {
+        try (final InputStream in = getClass().getResourceAsStream("/map_colors.txt")) {
+            assert in != null;
+            mapColorTable.registerColors(in);
+        } catch (final IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void registerCommands(@NotNull final Map<String, CommandExecutor> commandExecutorMap) {
@@ -79,6 +98,11 @@ public class ArchivistPlugin extends JavaPlugin {
     @NotNull
     public IndexCache indexCache() {
         return indexCache;
+    }
+
+    @NotNull
+    public MapColorTable mapColorTable() {
+        return mapColorTable;
     }
 
     @NotNull
