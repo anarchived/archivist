@@ -4,15 +4,12 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.World;
-import org.bukkit.block.Container;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.ChunkLoadEvent;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.BlockStateMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.MapMeta;
 import org.bukkit.map.MapView;
@@ -41,38 +38,13 @@ public class MapLoadListener implements Listener {
         for (final Entity entity : chunk.getEntities()) {
             if (!(entity instanceof final ItemFrame itemFrame)) continue;
 
-            final ItemStack item = remapRecursively(itemFrame.getItem(), world, serverCache);
+            final ItemStack item = itemFrame.getItem();
+            remapSingle(item, world, serverCache);
             itemFrame.setItem(item, false);
         }
     }
 
-    public static void remapInventory(@NotNull final Inventory inventory, @NotNull final World world) {
-        final var blobWorldMap = ArchivistPlugin.instance().indexCache().collectBlobWorldMap();
-        final ServerCache serverCache = blobWorldMap.get(world);
-
-        for (final ItemStack itemStack : inventory.getContents()) {
-            if (itemStack == null) continue;
-            remapRecursively(itemStack, world, serverCache);
-        }
-    }
-
-    @NotNull
-    public static ItemStack remapRecursively(@NotNull final ItemStack item, @NotNull final World world,
-                                             @NotNull final ServerCache serverCache) {
-        final ItemMeta meta = item.getItemMeta();
-        if (meta instanceof final BlockStateMeta blockStateMeta
-                && blockStateMeta.getBlockState() instanceof final Container container) {
-
-            remapInventory(container.getInventory(), world);
-            blockStateMeta.setBlockState(container);
-            item.setItemMeta(blockStateMeta);
-            return item;
-        }
-        remapSingle(item, world, serverCache);
-        return item;
-    }
-
-    private static void remapSingle(@NotNull final ItemStack item, @NotNull final World world,
+    public static void remapSingle(@NotNull final ItemStack item, @NotNull final World world,
                                     @NotNull final ServerCache serverCache) {
         final ItemMeta meta = item.getItemMeta();
 

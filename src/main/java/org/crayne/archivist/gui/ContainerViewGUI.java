@@ -43,7 +43,10 @@ public class ContainerViewGUI extends Gui {
                         || itemStack.getType() == Material.AIR
                         || itemStack.getAmount() == 0) return;
 
-                player.getInventory().addItem(MapLoadListener.remapRecursively(itemStack.clone(), world, serverCache));
+                final ItemStack item = itemStack.clone();
+                MapLoadListener.remapSingle(item, world, serverCache);
+                player.setItemOnCursor(new ItemStack(Material.AIR));
+                player.getInventory().addItem(item);
             });
             addItem(slot, icon);
             slot++;
