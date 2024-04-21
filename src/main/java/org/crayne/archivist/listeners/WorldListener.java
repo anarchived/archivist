@@ -206,9 +206,15 @@ public class WorldListener implements Listener {
     }
 
     @EventHandler
+    public void projectileHitEvent(@NotNull final ProjectileHitEvent ev) {
+        if (!(ev.getEntity() instanceof EnderPearl)) ev.setCancelled(true);
+    }
+
+    @EventHandler
     public void dropEvent(@NotNull final PlayerDropItemEvent ev) {
         if (ev.getPlayer().getGameMode() == GameMode.CREATIVE) return;
 
+        ev.getItemDrop().getItemStack().setAmount(0);
         ev.setCancelled(true);
     }
 
@@ -255,6 +261,13 @@ public class WorldListener implements Listener {
     @EventHandler
     public void itemSpawnEvent(@NotNull final ItemSpawnEvent ev) {
         ev.setCancelled(true);
+    }
+
+    @EventHandler
+    public void playerPickupItemEvent(@NotNull final PlayerAttemptPickupItemEvent ev) {
+        ev.setCancelled(true);
+        ev.getPlayer().getInventory().addItem(ev.getItem().getItemStack().clone());
+        ev.getItem().setPickupDelay(40);
     }
 
     @EventHandler
