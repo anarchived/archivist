@@ -26,7 +26,7 @@ public abstract class PagedGUI extends Gui {
     public PagedGUI(@Nullable final Gui previous, @NotNull final Player p,
                     @NotNull final String id, @NotNull final String title) {
         super(p, id, title, 6);
-        pagination.registerPageSlotsBetween(0, 52);
+        pagination.registerPageSlotsBetween(0, 44);
         this.previous = previous;
     }
 
