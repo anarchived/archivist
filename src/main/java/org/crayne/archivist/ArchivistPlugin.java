@@ -7,10 +7,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.crayne.archivist.command.GoCommand;
-import org.crayne.archivist.command.GoToCommand;
-import org.crayne.archivist.command.ReindexCommand;
-import org.crayne.archivist.command.SpawnCommand;
+import org.crayne.archivist.command.*;
 import org.crayne.archivist.consolefilter.LogSpamFilter;
 import org.crayne.archivist.index.cache.IndexCache;
 import org.crayne.archivist.index.maps.MapColorTable;
@@ -60,7 +57,8 @@ public class ArchivistPlugin extends JavaPlugin {
                 "goto", new GoToCommand(),
                 "go", new GoCommand(),
                 "reindex", new ReindexCommand(),
-                "spawn", new SpawnCommand()
+                "spawn", new SpawnCommand(),
+                "resetinventory", new ResetInventoryCommand()
         ));
         ((Logger) LogManager.getRootLogger()).addFilter(new LogSpamFilter());
     }

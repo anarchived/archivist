@@ -13,3 +13,5 @@ commands:
     description: Reindexes the entire archive automatically
   spawn:
     description: Teleport to spawn
+  resetinventory:
+    description: Resets a players inventory to how it was when they joined
