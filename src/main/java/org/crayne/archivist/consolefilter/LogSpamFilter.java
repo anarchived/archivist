@@ -25,7 +25,8 @@ public class LogSpamFilter implements Filter {
             "Ignoring plugin channel in incoming REGISTER",
             "Entity uuid already exists",
             "Unable to load item from",
-            "is outside of serialized chunk"
+            "is outside of serialized chunk",
+            "was expected to be a chest"
     );
 
     public Result filter(@NotNull final LogEvent event) {
