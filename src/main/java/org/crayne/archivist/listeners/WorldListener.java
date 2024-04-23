@@ -23,15 +23,14 @@ import org.bukkit.event.block.*;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.player.*;
+import org.bukkit.event.vehicle.VehicleDestroyEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
-import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.BlockStateMeta;
 import org.crayne.archivist.ArchivistPlugin;
 import org.crayne.archivist.command.GoCommand;
 import org.crayne.archivist.gui.ContainerViewGUI;
+import org.crayne.archivist.gui.EquipmentViewGUI;
 import org.crayne.archivist.gui.SaveListGUI;
 import org.crayne.archivist.gui.ServerListGUI;
 import org.crayne.archivist.index.cache.ServerCache;
@@ -49,6 +48,13 @@ public class WorldListener implements Listener {
     public void damageEvent(@NotNull final EntityDamageEvent ev) {
         if (ev.getCause() != EntityDamageEvent.DamageCause.KILL)
             ev.setCancelled(true);
+    }
+
+    @EventHandler
+    public void vehicleDestroyEvent(@NotNull final VehicleDestroyEvent ev) {
+        if (ev.getAttacker() instanceof final Player p && p.getGameMode() == GameMode.CREATIVE) return;
+
+        ev.setCancelled(true);
     }
 
     @EventHandler
@@ -77,17 +83,37 @@ public class WorldListener implements Listener {
         new SaveListGUI(p, server.get(), "").open();
     }
 
+    private static void openEquipmentCloneGUI(@NotNull final Player p, @NotNull final LivingEntity livingEntity) {
+        final EntityEquipment equipment = livingEntity.getEquipment();
+        if (equipment == null) return;
+
+        final EquipmentViewGUI gui = new EquipmentViewGUI(p, equipment);
+        gui.open();
+    }
+
     @EventHandler
     public void entityInteractEvent(@NotNull final PlayerInteractEntityEvent ev) {
+        if (ev.getPlayer().getGameMode() == GameMode.CREATIVE) return;
+
+        ev.setCancelled(true);
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void entityInteractEvent(@NotNull final PlayerInteractAtEntityEvent ev) {
         final Player p = ev.getPlayer();
         if (p.getGameMode() == GameMode.CREATIVE) return;
 
         final Entity entity = ev.getRightClicked();
+        ev.setCancelled(true);
 
         if (entity instanceof final ItemFrame itemFrame)
             p.getInventory().addItem(itemFrame.getItem().clone());
 
-        ev.setCancelled(true);
+        final boolean outsideOfSpawn = !entity.getWorld().equals(ArchivistPlugin.instance().spawnWorld().spawnWorld());
+        if (entity instanceof final LivingEntity livingEntity && outsideOfSpawn) {
+            openEquipmentCloneGUI(p, livingEntity);
+            return;
+        }
         handleSpawnInteraction(p, entity);
     }
 
@@ -149,6 +175,10 @@ public class WorldListener implements Listener {
 
     @EventHandler
     public void blockInteractEvent(@NotNull final PlayerInteractEvent ev) {
+        if (ev.getAction() == Action.PHYSICAL) {
+            ev.setCancelled(true);
+            return;
+        }
         final Block block = ev.getClickedBlock();
         final Player p = ev.getPlayer();
         final ItemStack item = ev.getItem();

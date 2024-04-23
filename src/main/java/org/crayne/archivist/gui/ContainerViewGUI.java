@@ -32,23 +32,30 @@ public class ContainerViewGUI extends Gui {
         return Optional.ofNullable(customName).orElse(inventory.getType().defaultTitle());
     }
 
+    @NotNull
+    protected static Icon createViewableItemIcon(@NotNull final Player viewer, @Nullable final ItemStack itemStack) {
+        final World world = viewer.getWorld();
+        final ServerCache serverCache = ArchivistPlugin.instance()
+                .indexCache()
+                .collectBlobWorldMap()
+                .get(world);
+
+        return new Icon(itemStack).onClick(e -> {
+            if (itemStack == null
+                    || itemStack.getType() == Material.AIR
+                    || itemStack.getAmount() == 0) return;
+
+            final ItemStack item = itemStack.clone();
+            MapLoadListener.remapSingle(item, world, serverCache);
+            viewer.setItemOnCursor(new ItemStack(Material.AIR));
+            viewer.getInventory().addItem(item);
+        });
+    }
+
     public void onOpen(@NotNull final InventoryOpenEvent ev) {
         int slot = 0;
-        final World world = player.getWorld();
-        final ServerCache serverCache = ArchivistPlugin.instance().indexCache().collectBlobWorldMap().get(world);
-
         for (final ItemStack itemStack : inventory.getContents()) {
-            final Icon icon = new Icon(itemStack).onClick(e -> {
-                if (itemStack == null
-                        || itemStack.getType() == Material.AIR
-                        || itemStack.getAmount() == 0) return;
-
-                final ItemStack item = itemStack.clone();
-                MapLoadListener.remapSingle(item, world, serverCache);
-                player.setItemOnCursor(new ItemStack(Material.AIR));
-                player.getInventory().addItem(item);
-            });
-            addItem(slot, icon);
+            addItem(slot, createViewableItemIcon(player, itemStack));
             slot++;
         }
     }
