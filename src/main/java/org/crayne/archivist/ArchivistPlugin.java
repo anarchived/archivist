@@ -56,9 +56,11 @@ public class ArchivistPlugin extends JavaPlugin {
         registerCommands(Map.of(
                 "goto", new GoToCommand(),
                 "go", new GoCommand(),
+                "find", new FindCommand(),
                 "reindex", new ReindexCommand(),
                 "spawn", new SpawnCommand(),
-                "resetinventory", new ResetInventoryCommand()
+                "resetinventory", new ResetInventoryCommand(),
+                "phase", new PhaseCommand()
         ));
         ((Logger) LogManager.getRootLogger()).addFilter(new LogSpamFilter());
     }

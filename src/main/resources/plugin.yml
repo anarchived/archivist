@@ -9,9 +9,13 @@ commands:
     description: Teleports a player to any specific save and variant
   go:
     description: GUI-based base/server search to quickly find a save
+  find:
+    description: GUI-based search to find bases across the full archive
   reindex:
     description: Reindexes the entire archive automatically
   spawn:
     description: Teleport to spawn
   resetinventory:
     description: Resets a players inventory to how it was when they joined
+  phase:
+    description: Sets the gamemode of a player to spectator (allows phasing through blocks)
