@@ -70,8 +70,7 @@ public class WorldListener implements Listener {
 
     private static void handleSpawnInteraction(@NotNull final Player p, @NotNull final Entity entity) {
         final Location location = entity.getLocation();
-
-        if (!location.getWorld().equals(ArchivistPlugin.instance().spawnWorld().spawnWorld())) return;
+        if (!ArchivistPlugin.isAtSpawn(location)) return;
 
         final BlockPosition blockPosition = BlockPosition.of(location);
         final String serverName = INTERACTABLES_SERVER_NAME_MAP.get(blockPosition);
@@ -109,7 +108,7 @@ public class WorldListener implements Listener {
         if (entity instanceof final ItemFrame itemFrame)
             p.getInventory().addItem(itemFrame.getItem().clone());
 
-        final boolean outsideOfSpawn = !entity.getWorld().equals(ArchivistPlugin.instance().spawnWorld().spawnWorld());
+        final boolean outsideOfSpawn = !ArchivistPlugin.isAtSpawn(entity.getWorld());
         if (entity instanceof final LivingEntity livingEntity && outsideOfSpawn) {
             openEquipmentCloneGUI(p, livingEntity);
             return;
@@ -151,8 +150,12 @@ public class WorldListener implements Listener {
 
     private static boolean handleDisallowedRightClick(@NotNull final PlayerInteractEvent ev,
                                                       @NotNull final BlockData data) {
-        if (data instanceof EnderChest || data instanceof Door
-                || data instanceof TrapDoor) {
+        final boolean enderChestClicked = data instanceof EnderChest;
+        final boolean doorClicked = data instanceof Door || data instanceof TrapDoor;
+        final boolean atSpawn = ArchivistPlugin.isAtSpawn(ev.getPlayer().getWorld());
+        final boolean disallow = enderChestClicked || (doorClicked && atSpawn);
+
+        if (disallow) {
             ev.setCancelled(true);
             return true;
         }

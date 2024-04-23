@@ -4,6 +4,8 @@ import mc.obliviate.inventory.InventoryAPI;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Logger;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -89,6 +91,19 @@ public class ArchivistPlugin extends JavaPlugin {
     @NotNull
     public static ArchivistPlugin instance() {
         return INSTANCE;
+    }
+
+    @NotNull
+    public static World spawnDimension() {
+        return ArchivistPlugin.instance().spawnWorld().spawnDimension();
+    }
+
+    public static boolean isAtSpawn(@NotNull final World world) {
+        return world.equals(spawnDimension());
+    }
+
+    public static boolean isAtSpawn(@NotNull final Location location) {
+        return isAtSpawn(location.getWorld());
     }
 
     public static void log(@NotNull final String s, @NotNull final Level level) {

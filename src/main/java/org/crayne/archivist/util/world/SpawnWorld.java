@@ -26,7 +26,7 @@ public class SpawnWorld implements Listener {
     }
 
     @NotNull
-    public World spawnWorld() {
+    public World spawnDimension() {
         return spawnWorld;
     }
 
