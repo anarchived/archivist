@@ -38,6 +38,7 @@ public class SaveGUI extends PagedGUI {
                     .onClick(e -> {
                         player.closeInventory();
                         player.teleport(position.get().toLocation(variant.getValue()));
+                        player.setAllowFlight(true);
                         player.sendMessage(teleportMessage.legacyText());
                     }));
         }

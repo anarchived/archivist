@@ -37,6 +37,7 @@ public class GoToCommand implements CommandExecutor {
             p.sendMessage(mainText("Teleported you to ")
                     .append(secondaryText(args[0] + ": " + args[1] + "-" + args[2]))
                     .component());
+            p.setAllowFlight(true);
             return true;
         } catch (final IndexingException e) {
             sender.sendMessage(errorMessage(e.getMessage()));

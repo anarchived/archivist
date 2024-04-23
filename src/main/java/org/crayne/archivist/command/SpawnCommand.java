@@ -20,6 +20,7 @@ public class SpawnCommand implements CommandExecutor {
         }
         p.sendMessage(ArchivistInventory.mainText("Teleported you to spawn.").component());
         p.teleport(ArchivistPlugin.instance().spawnWorld().spawnLocation());
+        p.setAllowFlight(true);
         return true;
     }
 
