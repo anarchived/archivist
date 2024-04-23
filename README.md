@@ -18,6 +18,14 @@ You can:
 - Go back, by clicking the back-arrow in the bottom left. This will open the previous window in the GUI.
 - Exit, with the escape key.
 
+## Find command
+To list all bases on the entire archive, this command can be used. Usage:
+```sh
+/find [search]
+# Example:
+# /find waterloo # opens the browser and searches across the entire archive related to "waterloo"
+```
+
 ## Go command
 To list all bases of a server, this command can be used. Usage:
 ```sh
