@@ -26,7 +26,9 @@ public class LogSpamFilter implements Filter {
             "Entity uuid already exists",
             "Unable to load item from",
             "is outside of serialized chunk",
-            "was expected to be a chest"
+            "was expected to be a chest",
+            "Refusing to add removed entity",
+            "could not be recovered in regionfile"
     );
 
     public Result filter(@NotNull final LogEvent event) {
