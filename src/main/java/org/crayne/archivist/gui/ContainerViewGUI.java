@@ -23,7 +23,7 @@ public class ContainerViewGUI extends Gui {
     private final Inventory inventory;
 
     public ContainerViewGUI(@NotNull final Player player, @NotNull final Inventory inventory, @Nullable final Component customName) {
-        super(player, "container-view", findName(inventory, customName), inventory.getSize() / 9);
+        super(player, "container-view", findName(inventory, customName), (int) Math.max(Math.ceil(inventory.getSize() / 9.0), 1));
         this.inventory = inventory;
     }
 
