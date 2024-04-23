@@ -115,7 +115,10 @@ public class ArchivistInventory implements Listener {
 
     @EventHandler
     public void joinEvent(@NotNull final PlayerJoinEvent ev) {
-        createArchivistInventory(ev.getPlayer());
+        final Player p = ev.getPlayer();
+        p.setAllowFlight(true);
+
+        createArchivistInventory(p);
     }
 
     @EventHandler
