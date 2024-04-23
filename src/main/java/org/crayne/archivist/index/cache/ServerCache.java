@@ -45,7 +45,7 @@ public class ServerCache {
         this.name = serverIndex.title();
         this.path = serverIndex.path();
         this.index = serverIndex;
-        this.saveCacheMap = new HashMap<>();
+        this.saveCacheMap = new TreeMap<>(Comparator.naturalOrder());
     }
 
     public void load() {
