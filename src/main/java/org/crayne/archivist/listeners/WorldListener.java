@@ -305,6 +305,9 @@ public class WorldListener implements Listener {
 
     @EventHandler
     public void blockPhysicsEvent(@NotNull final BlockPhysicsEvent ev) {
+        final BlockData data = ev.getChangedBlockData();
+        if (data instanceof Door || data instanceof TrapDoor) return;
+
         ev.setCancelled(true);
     }
 
