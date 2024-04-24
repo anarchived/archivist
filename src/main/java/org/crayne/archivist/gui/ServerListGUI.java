@@ -6,6 +6,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.crayne.archivist.ArchivistPlugin;
+import org.crayne.archivist.command.query.SearchQuery;
 import org.crayne.archivist.gui.util.LoreUtil;
 import org.crayne.archivist.index.IndexFile;
 import org.crayne.archivist.index.cache.IndexCache;
@@ -19,6 +20,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public class ServerListGUI extends PagedGUI {
 
@@ -56,7 +58,7 @@ public class ServerListGUI extends PagedGUI {
                             MarkdownBookRenderer.displayMarkdownToPlayer(player, indexFile.get());
                             return;
                         }
-                        new SaveListGUI(this, player, server).open();
+                        new SaveListGUI(this, player, SearchQuery.query(Set.of(server))).open();
                     }));
         }
     }

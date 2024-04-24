@@ -1,4 +1,4 @@
-package org.crayne.archivist.command;
+package org.crayne.archivist.command.query;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 import static org.crayne.archivist.command.CommandUtil.errorMessage;
 
@@ -32,10 +32,8 @@ public class GoCommand implements CommandExecutor {
         final Optional<ServerCache> server = requireServer(args[0], p);
         if (server.isEmpty()) return false;
 
-        final String query = Arrays.stream(args, 1, args.length).
-                collect(Collectors.joining(" "));
-
-        new SaveListGUI(p, server.get(), query).open();
+        final String[] query = Arrays.stream(args, 1, args.length).toList().toArray(String[]::new);
+        new SaveListGUI(p, SearchQuery.parse(Set.of(server.get()), query)).open();
         return true;
     }
 

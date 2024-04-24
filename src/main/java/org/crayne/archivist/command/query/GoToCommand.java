@@ -1,4 +1,4 @@
-package org.crayne.archivist.command;
+package org.crayne.archivist.command.query;
 
 import org.bukkit.Location;
 import org.bukkit.command.Command;

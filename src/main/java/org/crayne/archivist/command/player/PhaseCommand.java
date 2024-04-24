@@ -1,5 +1,6 @@
-package org.crayne.archivist.command;
+package org.crayne.archivist.command.player;
 
+import org.bukkit.GameMode;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -9,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 
 import static org.crayne.archivist.command.CommandUtil.errorMessage;
 
-public class ResetInventoryCommand implements CommandExecutor {
+public class PhaseCommand implements CommandExecutor {
 
     public boolean onCommand(@NotNull final CommandSender sender, @NotNull final Command command,
                              @NotNull final String label, @NotNull final String @NotNull [] args) {
@@ -17,7 +18,13 @@ public class ResetInventoryCommand implements CommandExecutor {
             sender.sendMessage(errorMessage("This command can only be used ingame."));
             return false;
         }
-        ArchivistInventory.createArchivistInventory(p);
+        if (p.getGameMode() == GameMode.SPECTATOR) {
+            p.sendMessage(ArchivistInventory.mainText("Disabled phase.").component());
+            p.setGameMode(GameMode.ADVENTURE);
+            return true;
+        }
+        p.sendMessage(ArchivistInventory.mainText("Enabled phase.").component());
+        p.setGameMode(GameMode.SPECTATOR);
         return true;
     }
 

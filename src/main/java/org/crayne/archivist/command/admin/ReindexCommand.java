@@ -1,4 +1,4 @@
-package org.crayne.archivist.command;
+package org.crayne.archivist.command.admin;
 
 import net.kyori.adventure.text.Component;
 import org.apache.commons.io.FileUtils;

@@ -28,7 +28,8 @@ import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.BlockStateMeta;
 import org.crayne.archivist.ArchivistPlugin;
-import org.crayne.archivist.command.GoCommand;
+import org.crayne.archivist.command.query.GoCommand;
+import org.crayne.archivist.command.query.SearchQuery;
 import org.crayne.archivist.gui.ContainerViewGUI;
 import org.crayne.archivist.gui.EquipmentViewGUI;
 import org.crayne.archivist.gui.SaveListGUI;
@@ -41,6 +42,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 public class WorldListener implements Listener {
 
@@ -79,7 +81,7 @@ public class WorldListener implements Listener {
         final Optional<ServerCache> server = GoCommand.requireServer(serverName, p);
         if (server.isEmpty()) return;
 
-        new SaveListGUI(p, server.get(), "").open();
+        new SaveListGUI(p, SearchQuery.query(Set.of(server.get()))).open();
     }
 
     private static void openEquipmentCloneGUI(@NotNull final Player p, @NotNull final LivingEntity livingEntity) {

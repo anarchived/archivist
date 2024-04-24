@@ -1,4 +1,4 @@
-package org.crayne.archivist.command;
+package org.crayne.archivist.command.query;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -6,9 +6,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.crayne.archivist.gui.SaveListGUI;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.Arrays;
-import java.util.stream.Collectors;
 
 import static org.crayne.archivist.command.CommandUtil.errorMessage;
 
@@ -20,10 +17,7 @@ public class FindCommand implements CommandExecutor {
             sender.sendMessage(errorMessage("This command can only be used ingame."));
             return false;
         }
-        final String query = Arrays.stream(args, 0, args.length).
-                collect(Collectors.joining(" "));
-
-        new SaveListGUI(p, null, query).open();
+        new SaveListGUI(p, SearchQuery.parse(args)).open();
         return true;
     }
 

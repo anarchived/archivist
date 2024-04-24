@@ -6,6 +6,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.crayne.archivist.ArchivistPlugin;
+import org.crayne.archivist.command.query.SearchQuery;
 import org.crayne.archivist.gui.util.LoreUtil;
 import org.crayne.archivist.index.IndexFile;
 import org.crayne.archivist.index.cache.SaveCache;
@@ -17,47 +18,21 @@ import org.crayne.archivist.text.markdown.MarkdownBookRenderer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class SaveListGUI extends PagedGUI {
 
-    @Nullable
-    private final ServerCache server;
-
     @NotNull
-    private final String query;
+    private final SearchQuery searchQuery;
 
     public SaveListGUI(@Nullable final ServerListGUI previous, @NotNull final Player p,
-                       @Nullable final ServerCache server, @NotNull final String query) {
-        super(previous, p, "save-list", "§1§l" + createTitle(server, query));
-        this.server = server;
-        this.query = sanitizeQuery(query);
+                       @NotNull final SearchQuery searchQuery) {
+        super(previous, p, "save-list", searchQuery.createTitle());
+        this.searchQuery = searchQuery;
     }
 
-    public SaveListGUI(@NotNull final Player p,
-                       @Nullable final ServerCache server, @NotNull final String query) {
-        this(null, p, server, query);
-    }
-
-    public SaveListGUI(@NotNull final ServerListGUI previous, @NotNull final Player p,
-                       @Nullable ServerCache server) {
-        this(previous, p, server, "");
-    }
-
-    @NotNull
-    private static String createTitle(@Nullable final ServerCache server, @NotNull final String query) {
-        final String lookupMode = query.isEmpty() ? "Bases of" : "Searching";
-        if (server != null)
-            return lookupMode + " " + server.name();
-
-        return lookupMode + " Archive";
-    }
-
-    @NotNull
-    private static String sanitizeQuery(@NotNull final String query) {
-        return query.replaceAll("[_ ]", "").toLowerCase();
+    public SaveListGUI(@NotNull final Player p, @NotNull final SearchQuery searchQuery) {
+        this(null, p, searchQuery);
     }
 
     @NotNull
@@ -81,12 +56,9 @@ public class SaveListGUI extends PagedGUI {
         lore.add(ArchivistInventory.mainText("From: " + server.name()).legacyText());
     }
 
-    private void filterSave(@NotNull final PaginationManager pagination,
-                            @NotNull final ServerCache server,
-                            @NotNull final SaveCache save) {
-        final String nameSanitized = sanitizeQuery(save.name());
-        if (!query.isEmpty() && !nameSanitized.contains(query)) return;
-
+    private void addSaveToGUI(@NotNull final PaginationManager pagination,
+                              @NotNull final ServerCache server,
+                              @NotNull final SaveCache save) {
         final List<String> lore = new ArrayList<>(LORE_DEFAULT);
         LoreUtil.addRemainingLines(lore, save.variants().keySet());
 
@@ -111,19 +83,29 @@ public class SaveListGUI extends PagedGUI {
     }
 
     public void update(@NotNull final PaginationManager pagination, @NotNull final ServerCache server) {
+        final Map<SaveCache, Integer> results = new HashMap<>();
         for (final SaveCache save : server.saveCacheMap().values()) {
-            filterSave(pagination, server, save);
+            final int matches = searchQuery.matches(save);
+            if (matches > 0) results.put(save, matches);
+        }
+        final List<SaveCache> resultsSorted = results.entrySet().stream()
+                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+                .map(Map.Entry::getKey)
+                .toList();
+
+        for (final SaveCache save : resultsSorted) {
+            addSaveToGUI(pagination, server, save);
         }
     }
 
     public void update(@NotNull final PaginationManager pagination) {
-        if (server != null) {
-            update(pagination, server);
-            return;
-        }
         final var serverCacheMap = ArchivistPlugin.instance().indexCache().serverCacheMap();
+        final var searchingServers = searchQuery.servers();
+
         for (final String serverName : serverCacheMap.keySet()) {
             final ServerCache server = serverCacheMap.get(serverName);
+            if (!searchingServers.isEmpty() && !searchingServers.contains(server)) continue;
+
             update(pagination, server);
         }
 
