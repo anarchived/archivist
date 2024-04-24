@@ -48,6 +48,7 @@ public class ArchivistPlugin extends JavaPlugin {
         indexCache.load();
         indexCache.copyRegionFiles();
         indexCache.loadAllVariants();
+        indexCache.loadAllTags();
 
         registerMapColors();
 

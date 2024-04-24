@@ -78,6 +78,14 @@ public class IndexCache {
         });
     }
 
+    public void loadAllTags() {
+        serverCacheMap.values().forEach(serverCache -> serverCache
+                .saveCacheMap()
+                .values()
+                .forEach(SaveCache::loadTags)
+        );
+    }
+
     @NotNull
     public Optional<ServerCache> resolveServerCache(@NotNull final String server) {
         return Optional.ofNullable(serverCacheMap.get(server));

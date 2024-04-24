@@ -4,6 +4,7 @@ import org.crayne.archivist.index.blob.Blob;
 import org.crayne.archivist.index.blob.region.Region;
 import org.crayne.archivist.index.blob.region.WorldType;
 import org.crayne.archivist.index.section.Section;
+import org.crayne.archivist.index.tags.MultiTag;
 import org.crayne.archivist.util.world.Position;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -102,6 +103,19 @@ public class Index {
     @NotNull
     public String title() {
         return indexTitle().orElse(path.getFileName().toString());
+    }
+
+    @NotNull
+    public List<MultiTag> indexTags() {
+        return indexFile()
+                .flatMap(i -> i.section("Tags"))
+                .map(Section::enumeration)
+                .map(enumeration -> enumeration.stream()
+                        .map(MultiTag::parse)
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
+                        .toList())
+                .orElse(Collections.emptyList());
     }
 
     @NotNull

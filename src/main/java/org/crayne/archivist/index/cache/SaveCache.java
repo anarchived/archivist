@@ -4,15 +4,14 @@ import org.bukkit.World;
 import org.crayne.archivist.index.Index;
 import org.crayne.archivist.index.blob.BlobField;
 import org.crayne.archivist.index.blob.BlobLevel;
+import org.crayne.archivist.index.tags.MultiTag;
 import org.crayne.archivist.util.MapUtil;
 import org.crayne.archivist.util.world.Position;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class SaveCache {
 
@@ -31,11 +30,15 @@ public class SaveCache {
     @NotNull
     private final Map<String, World> variantWorlds;
 
+    @NotNull
+    private final List<MultiTag> tags;
+
     public SaveCache(@NotNull final Index index) {
         this.name = index.title();
         this.path = index.path();
         this.index = index;
         this.variantWorlds = new HashMap<>();
+        this.tags = new ArrayList<>();
     }
 
     public void loadVariants(@NotNull final BlobField blobField) {
@@ -46,6 +49,16 @@ public class SaveCache {
             final World world = level.get().requireWorld();
             variantWorlds.put(variant.title(), world);
         });
+    }
+
+    public void loadTags() {
+        tags.clear();
+        tags.addAll(index.indexTags());
+    }
+
+    @NotNull
+    public List<MultiTag> tags() {
+        return tags;
     }
 
     @NotNull

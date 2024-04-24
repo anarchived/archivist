@@ -10,6 +10,7 @@ import org.crayne.archivist.gui.util.LoreUtil;
 import org.crayne.archivist.index.IndexFile;
 import org.crayne.archivist.index.cache.SaveCache;
 import org.crayne.archivist.index.cache.ServerCache;
+import org.crayne.archivist.index.tags.MultiTag;
 import org.crayne.archivist.inventory.ArchivistInventory;
 import org.crayne.archivist.text.ChatText;
 import org.crayne.archivist.text.markdown.MarkdownBookRenderer;
@@ -54,6 +55,7 @@ public class SaveListGUI extends PagedGUI {
         return lookupMode + " Archive";
     }
 
+    @NotNull
     private static String sanitizeQuery(@NotNull final String query) {
         return query.replaceAll("[_ ]", "").toLowerCase();
     }
@@ -66,6 +68,19 @@ public class SaveListGUI extends PagedGUI {
             ArchivistInventory.mainText("Archived dates:").legacyText()
     );
 
+    private static void addTagLines(@NotNull final List<String> lore, @NotNull final List<MultiTag> tags) {
+        if (tags.isEmpty()) return;
+
+        lore.add("");
+        lore.add(ArchivistInventory.mainText("Tags:").legacyText());
+        LoreUtil.addRemainingLines(lore, tags.stream().map(MultiTag::toString).toList());
+    }
+
+    private static void addServerNameLines(@NotNull final List<String> lore, @NotNull final ServerCache server) {
+        lore.add("");
+        lore.add(ArchivistInventory.mainText("From: " + server.name()).legacyText());
+    }
+
     private void filterSave(@NotNull final PaginationManager pagination,
                             @NotNull final ServerCache server,
                             @NotNull final SaveCache save) {
@@ -74,7 +89,9 @@ public class SaveListGUI extends PagedGUI {
 
         final List<String> lore = new ArrayList<>(LORE_DEFAULT);
         LoreUtil.addRemainingLines(lore, save.variants().keySet());
-        lore.add(ArchivistInventory.mainText("From: " + server.name()).legacyText());
+
+        addServerNameLines(lore, server);
+        addTagLines(lore, save.tags());
 
         final ChatText title = ArchivistInventory.mainText(save.name());
 
