@@ -2,7 +2,6 @@ package org.crayne.archivist.gui;
 
 import mc.obliviate.inventory.Icon;
 import mc.obliviate.inventory.pagination.PaginationManager;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.crayne.archivist.ArchivistPlugin;
@@ -11,6 +10,7 @@ import org.crayne.archivist.gui.util.LoreUtil;
 import org.crayne.archivist.index.IndexFile;
 import org.crayne.archivist.index.cache.IndexCache;
 import org.crayne.archivist.index.cache.ServerCache;
+import org.crayne.archivist.index.tags.MultiTag;
 import org.crayne.archivist.inventory.ArchivistInventory;
 import org.crayne.archivist.text.ChatText;
 import org.crayne.archivist.text.markdown.MarkdownBookRenderer;
@@ -47,7 +47,7 @@ public class ServerListGUI extends PagedGUI {
 
             final ChatText title = ArchivistInventory.mainText(server.name());
 
-            pagination.addItem(new Icon(Material.BOOK)
+            pagination.addItem(new Icon(MultiTag.createIconItemStack(server.tags()))
                     .setName(title.legacyText())
                     .setLore(lore)
                     .onClick(e -> {

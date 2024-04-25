@@ -12,13 +12,27 @@ public enum UnaryTag {
     INCOMPLETE_INFORMATION("Incomplete Information"), // does not include full information about the base
     INCOMPLETE_WORLD_DOWNLOAD("Incomplete World-download"), // does not include all parts of the base, or has missing chunks
     MISSING_ARCHIVALS("Missing Archivals"), // not all archivals are included, such as (un)griefed variants and other historic timestamps
-    EST("Est."); // establishment date / year of the base
+    EST("Est."), // establishment date / year of the base
+    ICON("Icon", true), // icon in the browser menu
+    GLINT("Glint", true), // makes the icon in browser menu glint if this tag was attached
+    ;
 
     @NotNull
     private final String asString;
 
+    private final boolean hidden;
+
     UnaryTag(@NotNull final String asString) {
+        this(asString, false);
+    }
+
+    UnaryTag(@NotNull final String asString, final boolean hidden) {
         this.asString = asString;
+        this.hidden = hidden;
+    }
+
+    public boolean hidden() {
+        return hidden;
     }
 
     @NotNull

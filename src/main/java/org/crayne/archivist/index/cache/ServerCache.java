@@ -10,6 +10,7 @@ import org.crayne.archivist.index.blob.BlobLevel;
 import org.crayne.archivist.index.blob.region.Region;
 import org.crayne.archivist.index.maps.ExternalMap;
 import org.crayne.archivist.index.maps.VirtualMapRenderer;
+import org.crayne.archivist.index.tags.MultiTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -41,11 +42,15 @@ public class ServerCache {
     @Nullable
     private BlobField blobField;
 
+    @NotNull
+    private final List<MultiTag> tags;
+
     public ServerCache(@NotNull final Index serverIndex) {
         this.name = serverIndex.title();
         this.path = serverIndex.path();
         this.index = serverIndex;
         this.saveCacheMap = new TreeMap<>(Comparator.naturalOrder());
+        this.tags = new ArrayList<>();
     }
 
     public void load() {
@@ -60,6 +65,17 @@ public class ServerCache {
                 })
                 .map(Index::createSaveBlobs)
                 .forEach(save -> save.forEach(blobField::merge));
+    }
+
+    public void loadTags() {
+        tags.clear();
+        tags.addAll(index.indexTags());
+        saveCacheMap.values().forEach(SaveCache::loadTags);
+    }
+
+    @NotNull
+    public List<MultiTag> tags() {
+        return tags;
     }
 
     private static boolean isRequiredMap(@NotNull final Path path, final int id) {

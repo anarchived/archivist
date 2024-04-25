@@ -2,7 +2,6 @@ package org.crayne.archivist.gui;
 
 import mc.obliviate.inventory.Icon;
 import mc.obliviate.inventory.pagination.PaginationManager;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.crayne.archivist.ArchivistPlugin;
@@ -44,11 +43,17 @@ public class SaveListGUI extends PagedGUI {
     );
 
     private static void addTagLines(@NotNull final List<String> lore, @NotNull final List<MultiTag> tags) {
-        if (tags.isEmpty()) return;
+        final List<String> visibleTags = tags.stream()
+                .filter(MultiTag::visible)
+                .map(MultiTag::toString)
+                .toList();
+
+        if (visibleTags.isEmpty()) return;
 
         lore.add("");
         lore.add(ArchivistInventory.mainText("Tags:").legacyText());
-        LoreUtil.addRemainingLines(lore, tags.stream().map(MultiTag::toString).toList());
+
+        LoreUtil.addRemainingLines(lore, visibleTags);
     }
 
     private static void addServerNameLines(@NotNull final List<String> lore, @NotNull final ServerCache server) {
@@ -67,7 +72,7 @@ public class SaveListGUI extends PagedGUI {
 
         final ChatText title = ArchivistInventory.mainText(save.name());
 
-        pagination.addItem(new Icon(Material.BOOK)
+        pagination.addItem(new Icon(MultiTag.createIconItemStack(save.tags()))
                 .setName(title.legacyText())
                 .setLore(lore)
                 .onClick(e -> {
@@ -83,6 +88,12 @@ public class SaveListGUI extends PagedGUI {
     }
 
     public void update(@NotNull final PaginationManager pagination, @NotNull final ServerCache server) {
+        if (searchQuery.isEmpty()) {
+            for (final SaveCache save : server.saveCacheMap().values()) {
+                addSaveToGUI(pagination, server, save);
+            }
+            return;
+        }
         final Map<SaveCache, Integer> results = new HashMap<>();
         for (final SaveCache save : server.saveCacheMap().values()) {
             final int matches = searchQuery.matches(save);

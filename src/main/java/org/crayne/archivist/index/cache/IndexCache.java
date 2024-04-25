@@ -79,11 +79,7 @@ public class IndexCache {
     }
 
     public void loadAllTags() {
-        serverCacheMap.values().forEach(serverCache -> serverCache
-                .saveCacheMap()
-                .values()
-                .forEach(SaveCache::loadTags)
-        );
+        serverCacheMap.values().forEach(ServerCache::loadTags);
     }
 
     @NotNull

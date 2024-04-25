@@ -65,6 +65,10 @@ public class SearchQuery {
         return new SearchQuery(servers, String.join(" ", query), tagsMapped);
     }
 
+    public boolean isEmpty() {
+        return query.isEmpty() && querySearchTags().isEmpty();
+    }
+
     @NotNull
     public String createTitle() {
         final String color = "§1§l";
@@ -103,7 +107,7 @@ public class SearchQuery {
         final boolean tagsMatch = querySearchTags.isEmpty()
                 || save.tags().stream().anyMatch(tag -> matches(querySearchTags, tag));
 
-        return tagsMatch ? nameSanitized.size() : 0;
+        return tagsMatch ? nameSanitized.size() + 1 : 0;
     }
 
     @NotNull
@@ -113,7 +117,7 @@ public class SearchQuery {
 
     @NotNull
     private static List<String> sanitizeQuerySplit(@NotNull final String query) {
-        return Arrays.stream(sanitizeQuery(query).split(" ")).toList();
+        return Arrays.stream(sanitizeQuery(query).split(" ")).filter(s -> !s.isBlank()).toList();
     }
 
     @NotNull

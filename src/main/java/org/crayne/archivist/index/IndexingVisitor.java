@@ -29,6 +29,14 @@ public class IndexingVisitor extends AbstractVisitor {
         if (currentSection != null) currentSection.append("\n");
     }
 
+    public void append(@NotNull final String text) {
+        if (currentSection == null) {
+            currentHeader = text;
+            return;
+        }
+        currentSection.append(text);
+    }
+
     public void visit(@NotNull final Header header) {
         currentSection = null;
         visitChildren(header);
@@ -36,6 +44,12 @@ public class IndexingVisitor extends AbstractVisitor {
         assert currentHeader != null;
         currentSection = new Section(currentHeader);
         indexFile.headerSectionMap().put(currentHeader, currentSection);
+    }
+
+    public void visit(@NotNull final ListItem listItem) {
+        append("- ");
+        visitChildren(listItem);
+        lineBreak();
     }
 
     public void visit(@NotNull final SoftLineBreak softLineBreak) {
@@ -47,11 +61,7 @@ public class IndexingVisitor extends AbstractVisitor {
     }
 
     public void visit(@NotNull final Text text) {
-        if (currentSection == null) {
-            currentHeader = text.getLiteral();
-            return;
-        }
-        currentSection.append(text.getLiteral());
+        append(text.getLiteral());
     }
 
 }
