@@ -53,6 +53,12 @@ public class MarkdownVisitor extends AbstractVisitor {
         lineBreak();
     }
 
+    public void visit(@NotNull final ListItem listItem) {
+        append(ChatText.text("§r- "));
+        visitChildren(listItem);
+        lineBreak();
+    }
+
     public void visit(final SoftLineBreak softLineBreak) {
         lineBreak();
     }
