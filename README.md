@@ -45,6 +45,12 @@ To explicitly teleport to a specific base found in the Server Index, use the /go
 # Note: The variant is usually a date, formatted in MM-DD-YYYY.
 ```
 
+# Additional Features
+- Opening containers will open a GUI, where you can view the contents (Click items to copy them to your inventory).
+- Right clicking a shulker box (or any container) while it's in your hand will open a GUI to view it's contents.
+- Right clicking an item frame will copy it's contents into your hand.
+- Right clicking any living entity or armor stand will open a GUI to see the entity equipment.
+
 # Usage for archive owners
 This is an example archive, a directory located in the minecraft server directory root, and it has the following structure:
 ```
