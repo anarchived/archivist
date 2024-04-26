@@ -46,7 +46,7 @@ public class ContainerViewGUI extends Gui {
                     || itemStack.getAmount() == 0) return;
 
             final ItemStack item = itemStack.clone();
-            MapLoadListener.remapSingle(item, world, serverCache);
+            MapLoadListener.remapSingle(item, world, serverCache).ifPresent(Runnable::run);
             viewer.setItemOnCursor(new ItemStack(Material.AIR));
             viewer.getInventory().addItem(item);
         });

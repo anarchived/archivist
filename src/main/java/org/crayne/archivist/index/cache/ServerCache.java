@@ -83,7 +83,7 @@ public class ServerCache {
     }
 
     @NotNull
-    public Optional<VirtualMapRenderer> loadMapView(final int id, @NotNull final World world) {
+    public Optional<VirtualMapRenderer> loadMapView(final int id) {
         final Optional<Path> mapPath = mapDataFiles()
                 .stream()
                 .filter(path -> isRequiredMap(path, id))
@@ -92,7 +92,7 @@ public class ServerCache {
         if (mapPath.isEmpty()) return Optional.empty();
 
         try (final FileInputStream in = new FileInputStream(mapPath.get().toFile())) {
-            return Optional.of(ExternalMap.readMapFromFile(in, world));
+            return Optional.of(ExternalMap.readMapFromFile(in));
         } catch (final IOException e) {
             throw new RuntimeException(e);
         }

@@ -2,7 +2,6 @@ package org.crayne.archivist.index.maps;
 
 import me.nullicorn.nedit.NBTReader;
 import me.nullicorn.nedit.type.NBTCompound;
-import org.bukkit.World;
 import org.crayne.archivist.ArchivistPlugin;
 import org.jetbrains.annotations.NotNull;
 
@@ -15,7 +14,7 @@ public class ExternalMap {
     public static final int SIZE = 128;
 
     @NotNull
-    public static VirtualMapRenderer readMapFromFile(@NotNull final FileInputStream in, @NotNull final World world) throws IOException {
+    public static VirtualMapRenderer readMapFromFile(@NotNull final FileInputStream in) throws IOException {
         final NBTCompound nbtCompound = NBTReader.read(in);
         final Color[][] image = new Color[SIZE][SIZE];
         final byte[] colors = nbtCompound.getCompound("data").getByteArray("colors");
