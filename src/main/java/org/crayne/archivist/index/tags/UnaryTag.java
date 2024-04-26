@@ -10,8 +10,10 @@ public enum UnaryTag {
     EXPLICIT_CONTENT( "Explicit Content"), // may include explicit content, such as sexual map art
     HATEFUL_CONTENT("Hateful Content"), // may include hate speech or hateful symbols / builds (swastikas, etc)
     INCOMPLETE_INFORMATION("Incomplete Information"), // does not include full information about the base
-    INCOMPLETE_WORLD_DOWNLOAD("Incomplete World-download"), // does not include all parts of the base, or has missing chunks
+    INCOMPLETE_WORLD_DOWNLOAD("Incomplete World Download"), // does not include all parts of the base, or has missing chunks
     MISSING_ARCHIVALS("Missing Archivals"), // not all archivals are included, such as (un)griefed variants and other historic timestamps
+    HAS_CONTAINER_DATA("Has Container Data"),
+    HAS_ENTITY_DATA("Has Entity Data"),
     EST("Est."), // establishment date / year of the base
     ICON("Icon", true), // icon in the browser menu
     GLINT("Glint", true), // makes the icon in browser menu glint if this tag was attached
