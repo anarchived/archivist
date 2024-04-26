@@ -2,13 +2,12 @@ package org.crayne.archivist.listeners;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.world.ChunkLoadEvent;
+import org.bukkit.event.world.EntitiesLoadEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.MapMeta;
@@ -32,17 +31,15 @@ public class MapLoadListener implements Listener {
     private static final Map<Integer, MapView> MAP_REMAPPING = new ConcurrentHashMap<>();
 
     @EventHandler
-    public void mapLoadEvent(@NotNull final ChunkLoadEvent ev) {
-        final Chunk chunk = ev.getChunk();
-
+    public void mapLoadEvent(@NotNull final EntitiesLoadEvent ev) {
         final var blobWorldMap = ArchivistPlugin.instance().indexCache().collectBlobWorldMap();
-        final World world = chunk.getWorld();
+        final World world = ev.getWorld();
         final ServerCache serverCache = blobWorldMap.get(world);
 
         final List<Runnable> executeInSync = new ArrayList<>();
 
         final ExecutorService remapperThreadPool = Executors.newCachedThreadPool();
-        for (final Entity entity : chunk.getEntities()) {
+        for (final Entity entity : ev.getEntities()) {
             if (!(entity instanceof final ItemFrame itemFrame)) continue;
 
             final ItemStack item = itemFrame.getItem();
@@ -58,7 +55,7 @@ public class MapLoadListener implements Listener {
         try {
             final boolean successful = remapperThreadPool.awaitTermination(1, TimeUnit.MINUTES);
             if (!successful) {
-                ArchivistPlugin.log("Could not remap map data at " + chunk + " in under 1 minute", Level.SEVERE);
+                ArchivistPlugin.log("Could not remap map data at " + ev.getChunk() + " in under 1 minute", Level.SEVERE);
                 return;
             }
         } catch (final InterruptedException e) {
@@ -71,7 +68,7 @@ public class MapLoadListener implements Listener {
 
     @NotNull
     public static Optional<Runnable> remapSingle(@NotNull final ItemStack item, @NotNull final World world,
-                                    @NotNull final ServerCache serverCache) {
+                                                 @NotNull final ServerCache serverCache) {
         final ItemMeta meta = item.getItemMeta();
 
         if (!(meta instanceof final MapMeta mapMeta))
@@ -87,9 +84,9 @@ public class MapLoadListener implements Listener {
 
     @NotNull
     private static Optional<Runnable> remapItem(@NotNull final ItemStack item, final int oldMapId,
-                                  @NotNull final MapMeta mapMeta, @NotNull final World world,
-                                  @NotNull final ServerCache serverCache,
-                                  final boolean applyOldInformation) {
+                                                @NotNull final MapMeta mapMeta, @NotNull final World world,
+                                                @NotNull final ServerCache serverCache,
+                                                final boolean applyOldInformation) {
         final int mapIdHash = Objects.hash(serverCache.name(), oldMapId);
 
         if (MAP_REMAPPING.containsKey(mapIdHash)) return Optional.of(() -> {
