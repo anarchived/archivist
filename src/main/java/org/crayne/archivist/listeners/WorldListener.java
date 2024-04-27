@@ -24,9 +24,11 @@ import org.bukkit.event.entity.*;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.event.vehicle.VehicleDestroyEvent;
-import org.bukkit.event.world.ChunkLoadEvent;
+import org.bukkit.event.vehicle.VehicleMoveEvent;
+import org.bukkit.event.world.EntitiesLoadEvent;
 import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.BlockStateMeta;
+import org.bukkit.util.Vector;
 import org.crayne.archivist.ArchivistPlugin;
 import org.crayne.archivist.command.query.GoCommand;
 import org.crayne.archivist.command.query.SearchQuery;
@@ -261,8 +263,20 @@ public class WorldListener implements Listener {
     }
 
     @EventHandler
-    public void chunkLoadEvent(@NotNull final ChunkLoadEvent ev) {
-        for (final Entity entity : ev.getChunk().getEntities()) {
+    public void vehicleMoveEvent(@NotNull final VehicleMoveEvent ev) {
+        final Vehicle vehicle = ev.getVehicle();
+        vehicle.teleport(ev.getFrom());
+        vehicle.setVelocity(new Vector(0, 0, 0));
+    }
+
+    @EventHandler
+    public void cropGrowEvent(@NotNull final BlockGrowEvent ev) {
+        ev.setCancelled(true);
+    }
+
+    @EventHandler
+    public void entitiesLoadEvent(@NotNull final EntitiesLoadEvent ev) {
+        for (final Entity entity : ev.getEntities()) {
             if (!(entity instanceof final LivingEntity livingEntity)) continue;
 
             livingEntity.setAI(false);
