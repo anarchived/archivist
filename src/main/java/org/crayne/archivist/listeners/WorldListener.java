@@ -67,7 +67,8 @@ public class WorldListener implements Listener {
     // too lazy to make a config for this currently
     @NotNull
     private static final Map<BlockPosition, String> INTERACTABLES_SERVER_NAME_MAP = Map.of(
-            new BlockPosition(-10, 66, 10), "0b0t.org"
+            new BlockPosition(-10, 66, 10), "0b0t.org",
+            new BlockPosition(10, 66, 10), "oldfrog.org"
     );
 
     private static void handleSpawnInteraction(@NotNull final Player p, @NotNull final Entity entity) {
